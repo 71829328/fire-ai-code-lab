@@ -8,8 +8,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 const TIMELINE = [
   { k: "Base", t: "Karatê e competições", d: "Medalhas em campeonatos estaduais e nacionais (anos a confirmar com a atleta)." },
   { k: "Clube", t: "SESI-SP Cubatão", d: "Atuação como atleta do SESI-SP Cubatão, kumite −68 kg." },
-  { k: "2024/25", t: "Seleção Brasileira", d: "Trajetória na Seleção, com resultados internacionais e pan-americanos." },
-  { k: "2025", t: "Ranking CBK", d: "Liderança no ranking da Confederação Brasileira de Karatê em 2025." },
+  { k: "2024–25", t: "Seleção Brasileira", d: "Convocações confirmadas pelo SESI-SP em 2024 e em 2025." },
+  { k: "2025", t: "Ranking paulista", d: "1º lugar estadual FPK no kumite Sênior -68 kg, com 1.260 pontos." },
+  { k: "2026", t: "Ouro universitário", d: "Campeã paulista na categoria universitária, segundo o SESI-SP." },
   { k: "Próximo", t: "História em construção", d: "Este capítulo será escrito com a Yasmin." },
 ];
 
@@ -92,14 +93,14 @@ export function Home() {
           <div className="mx-auto max-w-6xl px-5">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <h2 className="display text-6xl md:text-8xl">Conquistas</h2>
-              <p className="max-w-xs text-sm opacity-70">Resultados informados na bio pública e no mídia kit preliminar. Datas a confirmar.</p>
+              <p className="max-w-xs text-sm opacity-70">Resultados com referência em fontes esportivas oficiais; conquistas internacionais da bio aguardam confirmação de datas.</p>
             </div>
             <ul className="mt-10 border-t border-paper/20">
               {ACHIEVEMENTS.map((a, i) => (
                 <li key={a.detail} className="group grid grid-cols-[2.5rem_1fr] items-baseline gap-4 border-b border-paper/20 py-6 transition hover:bg-paper/5 md:grid-cols-[4rem_14rem_1fr_12rem]">
                   <span className="display text-xl opacity-50">{String(i + 1).padStart(2, "0")}</span>
                   <span className="display text-4xl transition group-hover:text-coral md:text-5xl">{a.title}</span>
-                  <span className="col-start-2 md:col-start-auto text-lg">{a.detail}<span className="block text-xs opacity-60">{a.note}</span></span>
+                  <span className="col-start-2 md:col-start-auto text-lg">{a.detail}<span className="block text-xs opacity-60">{a.note}</span>{a.sourceUrl && <a href={a.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex text-xs font-semibold text-coral underline-offset-4 hover:underline">Conferir fonte oficial ↗</a>}</span>
                   <span className="eyebrow col-start-2 opacity-70 md:col-start-auto md:text-right">{a.tag}</span>
                 </li>
               ))}

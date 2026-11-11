@@ -9,10 +9,11 @@ describe("dados públicos auditáveis", () => {
   });
 
   it("mantém os resultados explicitamente associados a 2025 quando necessário", () => {
-    const ranking = ACHIEVEMENTS.find((a) => a.title === "Ranking CBK");
+    const ranking = ACHIEVEMENTS.find((a) => a.title === "1º lugar");
     expect(ranking?.detail).toContain("2025");
+    expect(ranking?.sourceUrl).toContain("fpk.com.br");
     expect(ranking?.note).toContain("2025");
-    expect(ACHIEVEMENTS).toHaveLength(6);
+    expect(ACHIEVEMENTS).toHaveLength(10);
   });
 
   it("tem uma grade editorial real com cinco pilares e dez roteiros", () => {
