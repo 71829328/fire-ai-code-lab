@@ -4,7 +4,16 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "./App";
 
-beforeEach(() => { localStorage.clear(); vi.stubGlobal("confirm", vi.fn(() => true)); });
+beforeEach(() => {
+  const data = new Map<string,string>();
+  vi.stubGlobal("localStorage", {
+    getItem: (key:string) => data.get(key) ?? null,
+    setItem: (key:string,value:string) => { data.set(key,value); },
+    removeItem: (key:string) => { data.delete(key); },
+    clear: () => data.clear(),
+  });
+  vi.stubGlobal("confirm", vi.fn(() => true));
+});
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 const open = (path: string) => render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
