@@ -75,7 +75,7 @@ export function Editorial() {
         </div>
         <div className="mt-3 flex gap-2">
           <Btn onClick={save} disabled={!form.title.trim() || !form.date}>{editing ? "Salvar" : "Adicionar"}</Btn>
-          {editing && <><Btn variant="ghost" onClick={() => { setForm(blank()); setEditing(null); }}>Cancelar</Btn><Btn variant="danger" onClick={() => { setPosts(posts.filter((p) => p.id !== editing)); setForm(blank()); setEditing(null); }}>Excluir</Btn></>}
+          {editing && <><Btn variant="ghost" onClick={() => { setForm(blank()); setEditing(null); }}>Cancelar</Btn><Btn variant="danger" onClick={() => { if(window.confirm("Excluir esta publicação do calendário?")) {setPosts(posts.filter((p) => p.id !== editing)); setForm(blank()); setEditing(null);} }}>Excluir</Btn></>}
         </div>
         {posts.length === 0 && <div className="mt-4"><Empty title="Calendário vazio" text="Clique num dia ou use uma das ideias abaixo para começar." /></div>}
       </Panel>

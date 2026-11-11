@@ -23,7 +23,7 @@ export function Leads() {
           <div className="col-span-2"><Field label="Notas"><input className={inputCls} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field></div>
         </div>
         <div className="mt-3 flex gap-2"><Btn onClick={save} disabled={!f.name.trim()}>{edit ? "Salvar" : "Adicionar lead"}</Btn>
-          {edit && <><Btn variant="ghost" onClick={() => { setF(blank()); setEdit(null); }}>Cancelar</Btn><Btn variant="danger" onClick={() => { setLeads(leads.filter((l) => l.id !== edit)); setF(blank()); setEdit(null); }}>Excluir</Btn></>}</div>
+          {edit && <><Btn variant="ghost" onClick={() => { setF(blank()); setEdit(null); }}>Cancelar</Btn><Btn variant="danger" onClick={() => { if(window.confirm("Excluir este contato da lista local?")) {setLeads(leads.filter((l) => l.id !== edit)); setF(blank()); setEdit(null);} }}>Excluir</Btn></>}</div>
       </Panel>
       {leads.length === 0 ? <Empty title="Nenhum lead ainda" text="A lista começa vazia de propósito. Adicione apenas marcas reais que a equipe decidir abordar." /> : (
         <div className="flex gap-3 overflow-x-auto pb-2">
