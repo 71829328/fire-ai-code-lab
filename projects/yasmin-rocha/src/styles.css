@@ -105,8 +105,12 @@ img { display:block; }
 @media print {
   @page { size: A4; margin: 12mm; }
   body { background:#fff!important; color:#111!important; }
-  header,footer,nav,.print\\:hidden { display:none!important; }
+  header,footer,nav,.no-print { display:none!important; }
   section { break-inside:avoid; }
+  .bg-ink,.bg-primary { background:#fff!important; color:#111!important; }
+  .text-paper,.text-primary-foreground { color:#111!important; }
+  figure { max-width:180px; margin:0 auto; }
+  figure img { max-height:220px; object-fit:contain; }
   a { text-decoration:none!important; }
   h1,h2,h3 { break-after:avoid; }
 }

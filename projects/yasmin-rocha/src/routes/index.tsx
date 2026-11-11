@@ -59,7 +59,7 @@ export function Home() {
                 </figcaption>
               </figure>
               <div className="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-lg border hairline bg-border">
-                {[[BASELINE.followers.toLocaleString("pt-BR"),"seguidores"],[String(BASELINE.posts),"posts"],["2025","destaques"]].map(([n,l]) => <div key={l} className="bg-card px-3 py-4 text-center"><div className="display text-[2rem] text-ink">{n}</div><div className="eyebrow mt-1 text-[.56rem] text-muted-foreground">{l}</div></div>)}
+                {[[BASELINE.followers.toLocaleString("pt-BR"),"seguidores"],[String(BASELINE.posts),"posts"],["−68","kg kumite"]].map(([n,l]) => <div key={l} className="bg-card px-3 py-4 text-center"><div className="display text-[2rem] text-ink">{n}</div><div className="eyebrow mt-1 text-[.56rem] text-muted-foreground">{l}</div></div>)}
               </div>
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Fotografia do mídia kit da atleta. Dados do Instagram: captura manual em 11/11/2026.</p>
             </aside>

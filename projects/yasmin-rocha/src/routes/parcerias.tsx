@@ -26,7 +26,7 @@ export function Parcerias() {
           <div><p className="eyebrow text-coral">Proposta editorial · em revisão</p>
           <h1 className="display mt-4 text-[4rem] sm:text-8xl lg:text-9xl rise">Caminhe<br />ao lado de<br /><span className="text-primary">uma atleta.</span></h1>
           <p className="mt-8 max-w-xl text-lg text-muted-foreground">Três formatos de apoio para marcas que valorizam disciplina, fé e representação brasileira. Tudo é ponto de partida para conversa — nada aqui é tabela de preços.</p>
-          <div className="mt-8 flex flex-wrap gap-3 print:hidden">
+          <div className="no-print mt-8 flex flex-wrap gap-3">
             <a href={IG_DM} target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground hover:bg-foreground">Propor uma parceria ↗</a>
             <button type="button" onClick={() => window.print()} className="rounded-full border hairline px-6 py-3 font-medium hover:border-foreground">Salvar proposta em PDF</button>
           </div>
