@@ -54,7 +54,7 @@ describe("Yasmin Rocha: smoke test das páginas", () => {
     const date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     fireEvent.change(screen.getByLabelText("Data"), { target: { value: date } });
     fireEvent.click(screen.getByRole("button", { name: "Adicionar" }));
-    expect(screen.getByText("Treino de hoje")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Treino de hoje/i })).toBeTruthy();
     expect(JSON.parse(localStorage.getItem("yr-studio:posts") ?? "[]").some((p: { title: string }) => p.title === "Treino de hoje")).toBe(true);
   });
 });
