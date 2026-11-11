@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SiteHeader, SiteFooter, PhotoSlot } from "@/components/site/SiteHeader";
+import { SiteHeader, SiteFooter } from "@/components/site/SiteHeader";
 import { ACHIEVEMENTS, BASELINE, IG_DM, IG_URL } from "@/lib/athlete";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -49,17 +49,19 @@ export function Home() {
                 <a href={IG_URL} target="_blank" rel="noreferrer" className="rounded-full border hairline px-6 py-3 font-medium transition hover:border-foreground">@yasmin_karate_ ↗</a>
               </div>
             </div>
-            <aside className="relative md:col-span-4">
-              <div className="display pointer-events-none absolute -right-6 -top-10 select-none text-[14rem] leading-none text-slate-soft md:text-[18rem]" aria-hidden>空手</div>
-              <div className="relative grid grid-cols-2 gap-px overflow-hidden rounded-md border hairline bg-border">
-                {[["200", "posts"], ["6.090", "seguidores"], ["−68", "kg kumite"], ["BR", "seleção"]].map(([n, l]) => (
-                  <div key={l} className="bg-card p-5">
-                    <div className="display text-5xl">{n}</div>
-                    <div className="eyebrow mt-2 text-muted-foreground">{l}</div>
-                  </div>
-                ))}
+            <aside className="relative md:col-span-4 rise">
+              <figure className="relative overflow-hidden rounded-2xl bg-ink shadow-[0_30px_80px_-35px_rgba(17,25,36,.4)]">
+                <img src="/images/yasmin-hero.webp" alt="Yasmin Rocha em posição de combate no tatame, com quimono e luvas vermelhas" className="aspect-[3/4] w-full object-cover object-center" fetchPriority="high" decoding="async" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink/85 to-transparent" />
+                <figcaption className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-3 text-paper">
+                  <div><p className="eyebrow text-xs text-paper/70">Kumite • Brasil</p><p className="display mt-1 text-3xl md:text-4xl">Yasmin Rocha</p></div>
+                  <span className="eyebrow rounded-full border border-paper/50 px-3 py-2 text-[.58rem]">-68 kg</span>
+                </figcaption>
+              </figure>
+              <div className="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-lg border hairline bg-border">
+                {[[BASELINE.followers.toLocaleString("pt-BR"),"seguidores"],[String(BASELINE.posts),"posts"],["2025","destaques"]].map(([n,l]) => <div key={l} className="bg-card px-3 py-4 text-center"><div className="display text-[2rem] text-ink">{n}</div><div className="eyebrow mt-1 text-[.56rem] text-muted-foreground">{l}</div></div>)}
               </div>
-              <p className="relative mt-3 text-xs text-muted-foreground">Instagram: captura manual em 11/11/2026 · não sincronizado.</p>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Fotografia do mídia kit da atleta. Dados do Instagram: captura manual em 11/11/2026.</p>
             </aside>
           </div>
           <div className="h-1.5 w-full bg-primary" /><div className="h-1.5 w-1/4 bg-coral" />
@@ -113,16 +115,24 @@ export function Home() {
           <p className="eyebrow text-primary">Conteúdo</p>
           <h2 className="display mt-3 text-6xl md:text-7xl">No tatame e fora dele</h2>
           <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4 md:grid-rows-2">
-            <PhotoSlot label="Foto oficial · competição" className="col-span-2 row-span-2 min-h-80 md:min-h-[28rem]" />
-            <PhotoSlot label="Pódio / medalha" className="min-h-40" />
-            <PhotoSlot label="Treino SESI" className="min-h-40" />
-            <PhotoSlot label="Viagem / bastidor" className="min-h-40" />
+<figure className="group relative col-span-2 row-span-2 min-h-80 overflow-hidden rounded-2xl bg-ink md:min-h-[28rem]">
+              <img src="/images/yasmin-portrait.webp" alt="Retrato oficial de Yasmin Rocha vestindo o quimono de karatê" className="absolute inset-0 h-full w-full object-cover object-[center_30%] transition duration-700 group-hover:scale-[1.035]" loading="lazy" decoding="async" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 to-transparent p-5 pt-16 text-paper"><span className="eyebrow">Identidade</span><p className="display mt-1 text-4xl">Atleta brasileira</p></figcaption>
+            </figure>
+            <figure className="group relative min-h-44 overflow-hidden rounded-2xl bg-ink">
+              <img src="/images/yasmin-action.webp" alt="Yasmin Rocha em retrato de preparação física" className="absolute inset-0 h-full w-full object-cover object-[center_20%] transition duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent p-4 pt-12 text-xs font-semibold text-paper">Rotina e preparação</figcaption>
+            </figure>
+            <figure className="group relative min-h-44 overflow-hidden rounded-2xl bg-ink">
+              <img src="/images/yasmin-training.webp" alt="Yasmin Rocha na arena de competição usando quimono e protetores de karatê" className="absolute inset-0 h-full w-full object-cover object-center transition duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent p-4 pt-12 text-xs font-semibold text-paper">Dentro do tatame</figcaption>
+            </figure>
             <a href={IG_URL} target="_blank" rel="noreferrer" className="group flex min-h-40 flex-col justify-between rounded-md bg-primary p-4 text-primary-foreground">
               <span className="eyebrow">Ver feed completo</span>
               <span className="display text-3xl transition group-hover:translate-x-1">Instagram ↗</span>
             </a>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">Galeria aguardando fotos oficiais autorizadas.</p>
+          <p className="mt-4 text-xs text-muted-foreground">Fotografias extraídas do mídia kit fornecido para esta prévia. Permissões definitivas de publicação e créditos de fotografia a confirmar.</p>
         </section>
 
         {/* MARCAS */}

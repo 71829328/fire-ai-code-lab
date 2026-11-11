@@ -22,10 +22,19 @@ export function Parcerias() {
     <div className="min-h-screen">
       <SiteHeader />
       <main>
-        <section className="mx-auto max-w-6xl px-5 pb-16 pt-14 md:pt-24">
-          <p className="eyebrow text-coral">Proposta editorial · em revisão</p>
+        <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 pb-16 pt-14 md:grid-cols-[1.3fr_0.7fr] md:gap-12 md:pt-24">
+          <div><p className="eyebrow text-coral">Proposta editorial · em revisão</p>
           <h1 className="display mt-4 text-[4rem] sm:text-8xl lg:text-9xl rise">Caminhe<br />ao lado de<br /><span className="text-primary">uma atleta.</span></h1>
           <p className="mt-8 max-w-xl text-lg text-muted-foreground">Três formatos de apoio para marcas que valorizam disciplina, fé e representação brasileira. Tudo é ponto de partida para conversa — nada aqui é tabela de preços.</p>
+          <div className="mt-8 flex flex-wrap gap-3 print:hidden">
+            <a href={IG_DM} target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground hover:bg-foreground">Propor uma parceria ↗</a>
+            <button type="button" onClick={() => window.print()} className="rounded-full border hairline px-6 py-3 font-medium hover:border-foreground">Salvar proposta em PDF</button>
+          </div>
+          </div>
+          <figure className="relative overflow-hidden rounded-2xl bg-ink shadow-[0_20px_60px_-35px_rgba(17,25,36,.5)]">
+            <img src="/images/yasmin-portrait.webp" alt="Yasmin Rocha em retrato oficial com quimono de karatê" className="aspect-[4/5] w-full object-cover object-[center_20%]" loading="eager" decoding="async"/>
+            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-5 pt-20 text-paper"><span className="eyebrow">Karatê • Brasil</span><p className="display mt-1 text-3xl">Yasmin Rocha</p></figcaption>
+          </figure>
         </section>
 
         <section className="mx-auto max-w-6xl px-5 pb-20">
