@@ -13,6 +13,7 @@ beforeEach(() => {
     clear: () => data.clear(),
   });
   vi.stubGlobal("confirm", vi.fn(() => true));
+  vi.stubGlobal("scrollTo", vi.fn());
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
@@ -23,7 +24,7 @@ describe("Yasmin Rocha: smoke test das páginas", () => {
     const { container } = open("/");
     expect(screen.getByText(/Força que/i)).toBeTruthy();
     expect(container.querySelector('img[src="/images/yasmin-hero.webp"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: /Conversar sobre parceria/i })).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /Conversar sobre parceria/i }).length).toBeGreaterThan(0);
   });
 
   it("navega entre as páginas e oferece impressão da proposta", () => {
@@ -49,8 +50,11 @@ describe("Yasmin Rocha: smoke test das páginas", () => {
     open("/studio");
     fireEvent.click(screen.getByRole("button", { name: "Editorial" }));
     fireEvent.change(screen.getByLabelText("Título"), { target: { value: "Treino de hoje" } });
-    fireEvent.change(screen.getByLabelText("Data"), { target: { value: "2026-11-12" } });
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    fireEvent.change(screen.getByLabelText("Data"), { target: { value: date } });
     fireEvent.click(screen.getByRole("button", { name: "Adicionar" }));
     expect(screen.getByText("Treino de hoje")).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem("yr-studio:posts") ?? "[]").some((p: { title: string }) => p.title === "Treino de hoje")).toBe(true);
   });
 });
