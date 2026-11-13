@@ -1,3 +1,4 @@
+import { FireGlobe } from "./FireGlobe";
 import { useState } from "react";
 import { AGENT_CONEXAO_LABEL, AGENT_STATUS_LABEL } from "../../types";
 import { Flame, Bot, Network } from "lucide-react";
@@ -11,11 +12,9 @@ export function FireCore() {
   return <section className="fire-core glass" aria-label="Mapa conceitual de agentes cadastrados">
     <div className="fire-core-heading"><div><p className="fire-eyebrow">FIRE INTELLIGENCE / COMMAND CORE</p><h2>Núcleo de inteligência</h2></div><span className="chip border-amber-400/30 text-amber-200">Mapa local</span></div>
     <div className="fire-core-stage">
+      <FireGlobe />
       <svg viewBox="0 0 600 340" className="fire-orbit" aria-hidden="true">
         <defs><radialGradient id="coreGlow"><stop stopColor="#0e7490" stopOpacity=".6"/><stop offset="1" stopColor="#020617" stopOpacity=".1"/></radialGradient></defs>
-        <circle cx="300" cy="170" r="116" fill="url(#coreGlow)" stroke="#22d3ee" strokeOpacity=".6"/>
-        {[0,1,2,3,4].map(i=><ellipse key={i} cx="300" cy="170" rx={24+i*23} ry="116" fill="none" stroke="#22d3ee" strokeOpacity=".24"/>)}
-        {[0,1,2,3,4].map(i=><ellipse key={i} cx="300" cy={106+i*32} rx={i===0||i===4?96:112} ry="13" fill="none" stroke="#22d3ee" strokeOpacity=".25"/>)}
         <circle className="fire-orbit-ring" cx="300" cy="170" r="138" fill="none" stroke="#fb923c" strokeWidth="2" strokeDasharray="38 12 3 12"/>
         {agents.map((a,i)=>{const t=i*Math.PI/3-Math.PI/2;return <path key={a.id} d={`M300 170 L${300+225*Math.cos(t)} ${170+132*Math.sin(t)}`} stroke="#64748b" strokeDasharray="4 7" fill="none"/>;})}
       </svg>
