@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bot, Filter, Pencil, Plus, Search, ShieldAlert, Trash2 } from "lucide-react";
+import { Brain, Cpu, Shield, Sparkles, Workflow, Bot, Filter, Pencil, Plus, Search, ShieldAlert, Trash2 } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeStats } from "../store/selectors";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -209,14 +209,15 @@ export function Agents() {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 stagger">
           {agentesFiltrados.map((agente) => {
+            const Avatar = [Brain, Cpu, Shield, Sparkles, Workflow][Array.from(agente.nome).reduce((n,c)=>n+c.charCodeAt(0),0)%5];
             const tarefas = state.tarefas.filter((t) => t.agenteId === agente.id);
             const concluidas = tarefas.filter((t) => t.status === "concluida").length;
             return (
-              <article key={agente.id} className="glass glass-hover flex flex-col p-5">
+              <article key={agente.id} className="glass glass-hover fire-agent-card flex flex-col p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fire-gradient text-night-950 shadow-glow">
-                      <Bot className="h-5 w-5" />
+                    <div className="fire-agent-avatar flex h-16 w-16 shrink-0 items-center justify-center rounded-xl">
+                      <Avatar className="h-8 w-8" />
                     </div>
                     <div>
                       <h3 className="text-base font-semibold text-slate-50">{agente.nome}</h3>
@@ -254,7 +255,7 @@ export function Agents() {
                       Concluídas
                     </dt>
                     <dd className="text-lg font-bold text-slate-100">
-                      {concluidas || agente.tarefasConcluidas}
+                      {concluidas}
                     </dd>
                   </div>
                 </dl>
