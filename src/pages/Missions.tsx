@@ -65,6 +65,9 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 const EVIDENCE_TYPES: EvidenceType[] = ["evidencia", "commit", "resultado", "relatorio"];
 
+// Fila operacional: prioridade (alta → baixa) e, em empate, atualização mais recente.
+const ORDEM_PRIORIDADE: Record<Priority, number> = { alta: 0, media: 1, baixa: 2 };
+
 export function Missions() {
   const { state, dispatch } = useStore();
   const [busca, setBusca] = useState("");
@@ -85,17 +88,23 @@ export function Missions() {
 
   const missoesFiltradas = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    return state.missoes.filter((missao) => {
-      const combinaBusca =
-        termo === "" ||
-        missao.codigo.toLowerCase().includes(termo) ||
-        missao.titulo.toLowerCase().includes(termo) ||
-        missao.objetivo.toLowerCase().includes(termo);
-      const combinaStatus = filtroStatus === "todos" || missao.status === filtroStatus;
-      const combinaAgente =
-        filtroAgente === "todos" || (missao.agenteId ?? "sem") === filtroAgente;
-      return combinaBusca && combinaStatus && combinaAgente;
-    });
+    return state.missoes
+      .filter((missao) => {
+        const combinaBusca =
+          termo === "" ||
+          missao.codigo.toLowerCase().includes(termo) ||
+          missao.titulo.toLowerCase().includes(termo) ||
+          missao.objetivo.toLowerCase().includes(termo);
+        const combinaStatus = filtroStatus === "todos" || missao.status === filtroStatus;
+        const combinaAgente =
+          filtroAgente === "todos" || (missao.agenteId ?? "sem") === filtroAgente;
+        return combinaBusca && combinaStatus && combinaAgente;
+      })
+      .sort(
+        (a, b) =>
+          ORDEM_PRIORIDADE[a.prioridade] - ORDEM_PRIORIDADE[b.prioridade] ||
+          b.atualizadoEm.localeCompare(a.atualizadoEm)
+      );
   }, [state.missoes, busca, filtroStatus, filtroAgente]);
 
   const abrirCriacao = () => {
@@ -170,8 +179,26 @@ export function Missions() {
 
   return (
     <div className="space-y-5">
-      <section className="fire-mission-summary grid grid-cols-2 gap-3 lg:grid-cols-5" aria-label="Filtrar missões por situação">{(Object.keys(MISSION_STATUS_LABEL) as MissionStatus[]).map(status => <button key={status} type="button" aria-pressed={filtroStatus===status} onClick={()=>setFiltroStatus(filtroStatus===status?"todos":status)} className="glass fire-mission-tile p-3 text-left"><span className="block text-xs text-slate-300">{MISSION_STATUS_LABEL[status]}</span><strong className="mt-1 block text-2xl text-slate-50">{state.missoes.filter(m=>m.status===status).length}</strong></button>)}</section>
-      <div className="glass flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
+      <section
+        className="fire-queue grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+        aria-label="Fila de missões por situação"
+      >
+        {(Object.keys(MISSION_STATUS_LABEL) as MissionStatus[]).map((status) => (
+          <button
+            key={status}
+            type="button"
+            aria-pressed={filtroStatus === status}
+            onClick={() => setFiltroStatus(filtroStatus === status ? "todos" : status)}
+            className="fire-queue-item"
+          >
+            <span className="fire-queue-label">{MISSION_STATUS_LABEL[status]}</span>
+            <strong className="fire-queue-value">
+              {state.missoes.filter((m) => m.status === status).length}
+            </strong>
+          </button>
+        ))}
+      </section>
+      <div className="fire-toolbar">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
@@ -228,88 +255,108 @@ export function Missions() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 stagger">
-          {missoesFiltradas.map((missao) => (
-            <article key={missao.id} className="glass glass-hover flex flex-col p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-mono text-xs font-semibold text-fire-soft">{missao.codigo}</p>
-                  <h3 className="truncate text-base font-semibold text-slate-50">
-                    {missao.titulo}
-                  </h3>
-                </div>
-                <OrigemBadge origem={missao.origem} />
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <MissionStatusBadge status={missao.status} />
-                <PriorityBadge prioridade={missao.prioridade} />
-              </div>
-
-              <p className="mt-3 line-clamp-2 text-sm text-slate-400">
-                {missao.objetivo || "Sem objetivo informado."}
-              </p>
-
-              <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-                <div className="glass-soft px-2 py-2">
-                  <dt className="text-[10px] uppercase tracking-wide text-slate-400">Critérios</dt>
-                  <dd className="text-lg font-bold text-slate-100">{missao.criteriosAceite.length}</dd>
-                </div>
-                <div className="glass-soft px-2 py-2">
-                  <dt className="text-[10px] uppercase tracking-wide text-slate-400">Evidências</dt>
-                  <dd className="text-lg font-bold text-slate-100">{missao.evidencias.length}</dd>
-                </div>
-                <div className="glass-soft px-2 py-2">
-                  <dt className="text-[10px] uppercase tracking-wide text-slate-400">Depend.</dt>
-                  <dd className="text-lg font-bold text-slate-100">{missao.dependencias.length}</dd>
-                </div>
-              </dl>
-
-              <div className="mt-3 space-y-0.5 text-[11px] text-slate-500">
-                <p>Agente: {nomeAgente(missao.agenteId)}</p>
-                <p>Projeto: {nomeProjeto(missao.projetoId)}</p>
-                <p>Atualizada em {dateFormatter.format(new Date(missao.atualizadoEm))}</p>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
-                <button
-                  type="button"
-                  className="btn-ghost flex-1 !px-3 text-xs"
-                  onClick={() => setDetalhe(missao)}
-                >
-                  <ClipboardList className="h-3.5 w-3.5" />
-                  Detalhes
-                </button>
-                <CopyButton
-                  className="btn-ghost !px-3 text-xs"
-                  texto={buildMissionPrompt(missao, {
-                    agenteNome: nomeAgente(missao.agenteId),
-                    projetoNome: nomeProjeto(missao.projetoId),
-                    dependencias: missao.dependencias
-                      .map((dep) => state.missoes.find((m) => m.id === dep))
-                      .filter((dep): dep is Mission => Boolean(dep))
-                      .map((dep) => ({ codigo: dep.codigo, titulo: dep.titulo, status: dep.status })),
-                  })}
-                  label="Copiar prompt"
-                />
-                <button
-                  type="button"
-                  className="btn-ghost !px-3 text-xs"
-                  onClick={() => abrirEdicao(missao)}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  className="btn-danger !px-3 text-xs"
-                  onClick={() => setExcluindo(missao)}
-                  aria-label={`Excluir ${missao.codigo}`}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </article>
-          ))}
+        <div className="glass fire-table-wrap">
+          <table className="fire-table">
+            <caption className="sr-only">Fila operacional de missões, ordenada por prioridade</caption>
+            <thead>
+              <tr>
+                <th scope="col">Missão</th>
+                <th scope="col">Situação</th>
+                <th scope="col">Prioridade</th>
+                <th scope="col" className="hidden lg:table-cell">Responsável</th>
+                <th scope="col" className="hidden xl:table-cell">Projeto</th>
+                <th scope="col" className="hidden text-center xl:table-cell">Crit.</th>
+                <th scope="col" className="hidden text-center xl:table-cell">Evid.</th>
+                <th scope="col" className="hidden whitespace-nowrap lg:table-cell">Atualizada</th>
+                <th scope="col" className="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {missoesFiltradas.map((missao) => (
+                <tr key={missao.id}>
+                  <td className="min-w-[220px]">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-mono text-[11px] font-semibold text-fire-soft">
+                        {missao.codigo}
+                      </span>
+                      <span className="text-sm font-medium text-slate-100">{missao.titulo}</span>
+                      <span className="line-clamp-1 text-xs text-slate-500">
+                        {missao.objetivo || "Sem objetivo informado."}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <MissionStatusBadge status={missao.status} />
+                  </td>
+                  <td>
+                    <PriorityBadge prioridade={missao.prioridade} />
+                  </td>
+                  <td className="hidden text-sm text-slate-300 lg:table-cell">
+                    {nomeAgente(missao.agenteId)}
+                  </td>
+                  <td className="hidden text-sm text-slate-300 xl:table-cell">
+                    {nomeProjeto(missao.projetoId)}
+                  </td>
+                  <td className="hidden text-center text-sm tabular-nums text-slate-300 xl:table-cell">
+                    {missao.criteriosAceite.length}
+                  </td>
+                  <td className="hidden text-center text-sm tabular-nums text-slate-300 xl:table-cell">
+                    {missao.evidencias.length}
+                  </td>
+                  <td className="hidden whitespace-nowrap text-xs text-slate-500 lg:table-cell">
+                    {dateFormatter.format(new Date(missao.atualizadoEm))}
+                  </td>
+                  <td>
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        className="btn-ghost !px-2.5 !py-1.5 text-xs"
+                        onClick={() => setDetalhe(missao)}
+                        title="Abrir detalhes da missão"
+                      >
+                        <ClipboardList className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Detalhes</span>
+                      </button>
+                      <CopyButton
+                        className="btn-ghost !px-2.5 !py-1.5 text-xs"
+                        texto={buildMissionPrompt(missao, {
+                          agenteNome: nomeAgente(missao.agenteId),
+                          projetoNome: nomeProjeto(missao.projetoId),
+                          dependencias: missao.dependencias
+                            .map((dep) => state.missoes.find((m) => m.id === dep))
+                            .filter((dep): dep is Mission => Boolean(dep))
+                            .map((dep) => ({
+                              codigo: dep.codigo,
+                              titulo: dep.titulo,
+                              status: dep.status,
+                            })),
+                        })}
+                        label="Copiar prompt"
+                      />
+                      <button
+                        type="button"
+                        className="btn-ghost !px-2.5 !py-1.5 text-xs"
+                        onClick={() => abrirEdicao(missao)}
+                        aria-label={`Editar ${missao.codigo}`}
+                        title="Editar missão"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-danger !px-2.5 !py-1.5 text-xs"
+                        onClick={() => setExcluindo(missao)}
+                        aria-label={`Excluir ${missao.codigo}`}
+                        title="Excluir missão"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

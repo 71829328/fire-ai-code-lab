@@ -214,3 +214,140 @@ body{background:#050a10;background-image:radial-gradient(ellipse at 75% 0%,#1024
 .fire-phoenix-wordmark{width:185px}
 .fire-shell main .fire-agent-node{border-radius:4px}
 [role="dialog"] .glass{background:#08111d;border:1px solid #93bedb40;border-radius:8px;box-shadow:0 20px 80px #0009}
+
+/* =====================================================================
+   LAB-005 FINAL — acabamento corporativo (FIRE Forense)
+   Superfícies contínuas, divisórias discretas, tipografia refinada.
+   ===================================================================== */
+
+/* Foco acessível consistente em toda a aplicação. */
+.fire-shell :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--phoenix-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Barra de ferramentas integrada (busca + filtros + ação primária). */
+.fire-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--phoenix-line);
+  border-bottom: 1px solid var(--phoenix-line);
+  background: #08111d55;
+}
+.fire-toolbar .field { flex: 1 1 220px; min-width: 180px; }
+.fire-toolbar .field.lg\:w-52 { flex: 0 0 auto; }
+
+/* Fila/segmentos operacionais: contínuos, sem mosaico de cards. */
+.fire-queue { border-top: 1px solid var(--phoenix-line); border-bottom: 1px solid var(--phoenix-line); }
+.fire-queue-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--phoenix-line);
+  cursor: pointer;
+  transition: background .18s ease;
+}
+.fire-queue-item:last-child { border-right: 0; }
+.fire-queue-item:hover { background: #0ea5e90d; }
+.fire-queue-item[aria-pressed="true"] {
+  background: #ff6b2c12;
+  box-shadow: inset 0 -2px 0 var(--phoenix-orange);
+}
+.fire-queue-label { font-size: 11px; color: #9db4c7; letter-spacing: .02em; }
+.fire-queue-value { font-size: 22px; font-weight: 700; color: #eef5fb; font-variant-numeric: tabular-nums; }
+.fire-queue-item[aria-pressed="true"] .fire-queue-value { color: var(--phoenix-orange); }
+
+/* Tabelas densas legíveis. */
+.fire-table-wrap { overflow-x: auto; }
+.fire-shell main table.fire-table { min-width: 640px; }
+.fire-shell main table.fire-table thead th { position: sticky; top: 0; z-index: 1; }
+.fire-shell main table.fire-table th,
+.fire-shell main table.fire-table td { padding: 11px 14px; vertical-align: middle; }
+.fire-shell main table.fire-table tbody tr:nth-child(even) { background: #0b162109; }
+.fire-shell main table.fire-table tbody tr:focus-within { background: #0ea5e912; }
+
+/* Cabeçalho de painel editorial. */
+.fire-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--phoenix-line);
+}
+.fire-panel-title { font-size: 13px; font-weight: 600; color: #dce7f0; letter-spacing: .01em; }
+.fire-panel-sub { font-size: 11px; color: #8ea3b5; }
+
+/* Pares chave/valor densos. */
+.fire-kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12px; }
+.fire-kv dt { color: #8ea3b5; }
+.fire-kv dd { color: #dbe6ef; }
+
+/* Estado vazio editorial. */
+.fire-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 56px 24px;
+  text-align: center;
+  border-top: 1px solid var(--phoenix-line);
+  border-bottom: 1px solid var(--phoenix-line);
+  background: #08111d44;
+}
+.fire-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--phoenix-line);
+  border-radius: 8px;
+  color: var(--phoenix-orange);
+  background: #0b162133;
+}
+
+/* Faixa de rodapé/nota informativa. */
+.fire-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #a9bccb;
+  border-left: 2px solid var(--phoenix-cyan);
+  background: #06b6d40d;
+}
+
+/* Faixa de métricas contínua (KPIs de página). */
+.fire-metrics {
+  border-top: 1px solid var(--phoenix-line);
+  border-bottom: 1px solid var(--phoenix-line);
+  background: #08111d55;
+}
+.fire-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-right: 1px solid var(--phoenix-line);
+}
+.fire-metric:last-child { border-right: 0; }
+.fire-metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #eef5fb;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.fire-metric-label { font-size: 11px; color: #9db4c7; letter-spacing: .02em; }
+.fire-metric-hint { font-size: 11px; color: #6f8494; }

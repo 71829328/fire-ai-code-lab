@@ -129,26 +129,27 @@ export function Agents() {
 
   return (
     <div className="space-y-5">
-      <section className="glass grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
+      <section
+        className="fire-metrics grid grid-cols-2 sm:grid-cols-4"
+        aria-label="Indicadores de agentes"
+      >
         {indicadores.map((item) => (
-          <div key={item.label} className="glass-soft px-3 py-2 text-center">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">{item.label}</p>
-            <p className="text-xl font-bold text-slate-100">{item.value}</p>
+          <div key={item.label} className="fire-metric">
+            <span className="fire-queue-label">{item.label}</span>
+            <strong className="fire-queue-value">{item.value}</strong>
           </div>
         ))}
       </section>
 
       {stats.agentesConectados === 0 && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
-          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>
-            Nenhum agente possui conexão verificada — os registros são demonstrativos ou cadastrados
-            localmente.
-          </p>
-        </div>
+        <p className="fire-note">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden />
+          Nenhum agente possui conexão verificada — os registros são demonstrativos ou cadastrados
+          localmente.
+        </p>
       )}
 
-      <div className="glass flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+      <div className="fire-toolbar">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
@@ -159,7 +160,7 @@ export function Agents() {
             aria-label="Buscar agentes"
           />
         </div>
-        <div className="relative sm:w-52">
+        <div className="relative sm:w-48">
           <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <select
             className="field pl-9"
@@ -175,7 +176,7 @@ export function Agents() {
             ))}
           </select>
         </div>
-        <div className="relative sm:w-52">
+        <div className="relative sm:w-48">
           <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <select
             className="field pl-9"
@@ -207,80 +208,98 @@ export function Agents() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 stagger">
-          {agentesFiltrados.map((agente) => {
-            const Avatar = [Brain, Cpu, Shield, Sparkles, Workflow][Array.from(agente.nome).reduce((n,c)=>n+c.charCodeAt(0),0)%5];
-            const tarefas = state.tarefas.filter((t) => t.agenteId === agente.id);
-            const concluidas = tarefas.filter((t) => t.status === "concluida").length;
-            return (
-              <article key={agente.id} className="glass glass-hover fire-agent-card flex flex-col p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="fire-agent-avatar flex h-16 w-16 shrink-0 items-center justify-center rounded-xl">
-                      <Avatar className="h-8 w-8" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-slate-50">{agente.nome}</h3>
-                      <p className="text-xs text-slate-400">{agente.papel}</p>
-                    </div>
-                  </div>
-                  <OrigemBadge origem={agente.origem} />
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <AgentStatusBadge status={agente.status} />
-                  <ConnectionBadge conexao={agente.conexao} />
-                  <span className="chip border-white/10 bg-white/5 text-slate-300">
-                    {agente.modelo}
-                  </span>
-                </div>
-
-                <p className="mt-3 line-clamp-2 text-sm text-slate-400">{agente.descricao}</p>
-
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>Proficiência</span>
-                    <span className="font-semibold text-slate-200">{agente.proficiencia}%</span>
-                  </div>
-                  <ProgressBar value={agente.proficiencia} />
-                </div>
-
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-center">
-                  <div className="glass-soft px-3 py-2">
-                    <dt className="text-[11px] uppercase tracking-wide text-slate-400">Tarefas</dt>
-                    <dd className="text-lg font-bold text-slate-100">{tarefas.length}</dd>
-                  </div>
-                  <div className="glass-soft px-3 py-2">
-                    <dt className="text-[11px] uppercase tracking-wide text-slate-400">
-                      Concluídas
-                    </dt>
-                    <dd className="text-lg font-bold text-slate-100">
-                      {concluidas}
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="mt-4 flex gap-2 border-t border-white/10 pt-4">
-                  <button
-                    type="button"
-                    className="btn-ghost flex-1"
-                    onClick={() => abrirEdicao(agente)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-danger"
-                    onClick={() => setConfirmando(agente)}
-                    aria-label={`Excluir ${agente.nome}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+        <div className="glass fire-table-wrap">
+          <table className="fire-table">
+            <caption className="sr-only">Relação de agentes, com identidade individual</caption>
+            <thead>
+              <tr>
+                <th scope="col">Agente</th>
+                <th scope="col" className="hidden whitespace-nowrap md:table-cell">Modelo</th>
+                <th scope="col">Situação</th>
+                <th scope="col">Conexão</th>
+                <th scope="col" className="hidden lg:table-cell">Proficiência</th>
+                <th scope="col" className="hidden text-center sm:table-cell">Tarefas</th>
+                <th scope="col" className="hidden xl:table-cell">Origem</th>
+                <th scope="col" className="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agentesFiltrados.map((agente) => {
+                const Avatar = [Brain, Cpu, Shield, Sparkles, Workflow][
+                  Array.from(agente.nome).reduce((n, c) => n + c.charCodeAt(0), 0) % 5
+                ];
+                const tarefas = state.tarefas.filter((t) => t.agenteId === agente.id);
+                const concluidas = tarefas.filter((t) => t.status === "concluida").length;
+                return (
+                  <tr key={agente.id}>
+                    <td className="min-w-[200px]">
+                      <div className="flex items-center gap-3">
+                        <div className="fire-agent-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                          <Avatar className="h-5 w-5" aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                          <span
+                            className="block truncate text-sm font-medium text-slate-100"
+                            title={agente.descricao}
+                          >
+                            {agente.nome}
+                          </span>
+                          <span className="block truncate text-xs text-slate-400">
+                            {agente.papel}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="hidden whitespace-nowrap text-sm text-slate-300 md:table-cell">
+                      {agente.modelo}
+                    </td>
+                    <td>
+                      <AgentStatusBadge status={agente.status} />
+                    </td>
+                    <td>
+                      <ConnectionBadge conexao={agente.conexao} />
+                    </td>
+                    <td className="hidden lg:table-cell">
+                      <div className="flex min-w-[130px] items-center gap-2">
+                        <ProgressBar value={agente.proficiencia} />
+                        <span className="text-xs tabular-nums text-slate-300">
+                          {agente.proficiencia}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="hidden text-center text-sm tabular-nums text-slate-300 sm:table-cell">
+                      {concluidas}/{tarefas.length}
+                    </td>
+                    <td className="hidden xl:table-cell">
+                      <OrigemBadge origem={agente.origem} />
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          className="btn-ghost !px-2.5 !py-1.5 text-xs"
+                          onClick={() => abrirEdicao(agente)}
+                          aria-label={`Editar ${agente.nome}`}
+                          title="Editar agente"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-danger !px-2.5 !py-1.5 text-xs"
+                          onClick={() => setConfirmando(agente)}
+                          aria-label={`Excluir ${agente.nome}`}
+                          title="Excluir agente"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
