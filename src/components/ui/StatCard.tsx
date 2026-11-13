@@ -21,7 +21,7 @@ export function StatCard({
   } as const;
 
   return (
-    <article className="glass glass-hover flex items-start gap-4 p-4">
+    <article className={`glass glass-hover fire-stat fire-stat-${accent} flex items-start gap-4 p-4`}>
       <div
         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${accents[accent]}`}
       >
@@ -32,7 +32,7 @@ export function StatCard({
           {label}
         </p>
         <p className="mt-1 text-2xl font-bold text-slate-50">{value}</p>
-        <p className="mt-0.5 truncate text-xs text-slate-400">{hint}</p>
+        <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
       </div>
     </article>
   );
