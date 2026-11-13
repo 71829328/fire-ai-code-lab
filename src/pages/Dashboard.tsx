@@ -8,6 +8,7 @@ import {
   Plug,
   Target,
 } from "lucide-react";
+import { FireCore } from "../components/ui/FireCore";
 import { useStore } from "../store/StoreContext";
 import {
   computeStats,
@@ -82,6 +83,7 @@ export function Dashboard() {
         />
       </section>
 
+      <FireCore />
       <section className="glass-soft flex flex-wrap items-center gap-x-6 gap-y-2 p-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Indicadores operacionais
