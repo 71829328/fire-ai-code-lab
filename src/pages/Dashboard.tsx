@@ -1,16 +1,35 @@
-import { Activity as ActivityIcon, Bot, FolderKanban, ListChecks, TrendingUp } from "lucide-react";
+import {
+  Activity as ActivityIcon,
+  Bot,
+  Cpu,
+  Database,
+  FolderKanban,
+  ListChecks,
+  Plug,
+  Target,
+} from "lucide-react";
 import { useStore } from "../store/StoreContext";
-import { computeStats, statusDistribution, tasksByAgent } from "../store/selectors";
+import {
+  computeStats,
+  missionDistribution,
+  statusDistribution,
+  tasksByAgent,
+} from "../store/selectors";
 import { StatCard } from "../components/ui/StatCard";
 import { BarChart, DonutChart, ProgressBar } from "../components/charts/Charts";
-import { DemoBadge, ProjectStatusBadge } from "../components/ui/badges";
+import { OrigemBadge, ProjectStatusBadge } from "../components/ui/badges";
 import type { ActivityType } from "../types";
 
+// Mapa de ícones cobrindo todos os ActivityType do domínio v2.
 const activityIcon: Record<ActivityType, typeof ActivityIcon> = {
   agente: Bot,
   projeto: FolderKanban,
   tarefa: ListChecks,
+  missao: Target,
+  integracao: Plug,
+  execucao: Cpu,
   sistema: ActivityIcon,
+  backup: Database,
 };
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -23,10 +42,12 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 export function Dashboard() {
   const { state } = useStore();
   const stats = computeStats(state);
+  const cargaPorAgente = tasksByAgent(state);
   const concluidasRatio =
     stats.totalTarefas === 0
       ? 0
       : Math.round((stats.tarefasConcluidas / stats.totalTarefas) * 100);
+  const semConexaoReal = stats.agentesConectados === 0 && stats.integracoesAtivas === 0;
 
   return (
     <div className="space-y-6">
@@ -34,15 +55,15 @@ export function Dashboard() {
         <StatCard
           label="Agentes"
           value={stats.totalAgentes}
-          hint={`${stats.agentesAtivos} ativos agora`}
+          hint={`${stats.agentesConectados} conectados · ${stats.agentesCadastrados} cadastrados`}
           icon={Bot}
           accent="fire"
         />
         <StatCard
-          label="Projetos"
-          value={stats.totalProjetos}
-          hint={`${stats.projetosEmAndamento} em andamento`}
-          icon={FolderKanban}
+          label="Missões"
+          value={stats.totalMissoes}
+          hint={`${stats.missoesAguardandoAprovacao} aguardando aprovação`}
+          icon={Target}
           accent="cyan"
         />
         <StatCard
@@ -53,34 +74,47 @@ export function Dashboard() {
           accent="violet"
         />
         <StatCard
-          label="Progresso médio"
-          value={`${stats.progressoMedio}%`}
-          hint="Média de avanço dos projetos"
-          icon={TrendingUp}
+          label="Execuções locais"
+          value={stats.execucoesLocais}
+          hint="Demonstração no navegador"
+          icon={Cpu}
           accent="emerald"
         />
       </section>
 
+      <section className="glass-soft flex flex-wrap items-center gap-x-6 gap-y-2 p-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Indicadores operacionais
+        </h2>
+        <span className="chip border-white/10 bg-white/5 text-slate-200">
+          {stats.agentesConectados} agentes conectados
+        </span>
+        <span className="chip border-white/10 bg-white/5 text-slate-200">
+          {stats.integracoesAtivas}/{stats.integracoesTotal} integrações ativas
+        </span>
+        {semConexaoReal && (
+          <p className="text-xs text-amber-200">
+            Nenhuma conexão real ativa: todos os dados são demonstrativos e nenhuma integração
+            externa está habilitada.
+          </p>
+        )}
+      </section>
+
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="glass p-5 lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-100">
-                Distribuição de tarefas
-              </h2>
-              <p className="text-xs text-slate-400">Por status atual no quadro Kanban</p>
-            </div>
-            <DemoBadge compact />
-          </div>
+        <div className="glass p-5">
+          <h2 className="mb-4 text-sm font-semibold text-slate-100">Missões por status</h2>
+          <DonutChart data={missionDistribution(state)} />
+        </div>
+
+        <div className="glass p-5">
+          <h2 className="mb-4 text-sm font-semibold text-slate-100">Tarefas por status</h2>
           <DonutChart data={statusDistribution(state)} />
         </div>
 
         <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">
-            Carga por agente
-          </h2>
-          {tasksByAgent(state).length > 0 ? (
-            <BarChart data={tasksByAgent(state)} />
+          <h2 className="mb-4 text-sm font-semibold text-slate-100">Carga por agente</h2>
+          {cargaPorAgente.length > 0 ? (
+            <BarChart data={cargaPorAgente} />
           ) : (
             <p className="text-sm text-slate-400">Nenhuma tarefa atribuída ainda.</p>
           )}
@@ -89,9 +123,7 @@ export function Dashboard() {
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">
-            Progresso dos projetos
-          </h2>
+          <h2 className="mb-4 text-sm font-semibold text-slate-100">Progresso dos projetos</h2>
           <ul className="space-y-4">
             {state.projetos.slice(0, 5).map((projeto) => (
               <li key={projeto.id} className="space-y-2">
@@ -102,9 +134,9 @@ export function Dashboard() {
                   </span>
                 </div>
                 <ProgressBar value={projeto.progresso} />
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <ProjectStatusBadge status={projeto.status} />
-                  {projeto.demo && <DemoBadge compact />}
+                  <OrigemBadge origem={projeto.origem} />
                 </div>
               </li>
             ))}
@@ -115,9 +147,7 @@ export function Dashboard() {
         </div>
 
         <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">
-            Atividades recentes
-          </h2>
+          <h2 className="mb-4 text-sm font-semibold text-slate-100">Atividades recentes</h2>
           <ul className="space-y-3">
             {state.atividades.slice(0, 6).map((atividade) => {
               const Icon = activityIcon[atividade.tipo];

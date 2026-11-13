@@ -1,13 +1,21 @@
 import { useMemo, useState } from "react";
 import { CalendarClock, Filter, FolderKanban, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useStore } from "../store/StoreContext";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { Modal } from "../components/ui/Modal";
 import { EmptyState } from "../components/ui/EmptyState";
-import { DemoBadge, PriorityBadge, ProjectStatusBadge } from "../components/ui/badges";
+import { OrigemBadge, PriorityBadge, ProjectStatusBadge } from "../components/ui/badges";
 import { ProgressBar } from "../components/charts/Charts";
-import { PRIORITY_LABEL, PROJECT_STATUS_LABEL, type Priority, type Project, type ProjectStatus } from "../types";
+import {
+  PRIORITY_LABEL,
+  PROJECT_STATUS_LABEL,
+  type Priority,
+  type Project,
+  type ProjectStatus,
+} from "../types";
 
-type FormState = Omit<Project, "id" | "criadoEm" | "demo">;
+// Campos editáveis no formulário. A origem é definida no cadastro.
+type FormState = Omit<Project, "id" | "criadoEm" | "origem">;
 
 const emptyForm: FormState = {
   nome: "",
@@ -19,7 +27,11 @@ const emptyForm: FormState = {
   prazo: new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10),
 };
 
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
 export function Projects() {
   const { state, dispatch } = useStore();
@@ -29,6 +41,7 @@ export function Projects() {
   const [editando, setEditando] = useState<Project | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [erro, setErro] = useState("");
+  const [confirmando, setConfirmando] = useState<Project | null>(null);
 
   const nomeAgente = (id: string | null) =>
     state.agentes.find((agente) => agente.id === id)?.nome ?? "Sem responsável";
@@ -53,8 +66,15 @@ export function Projects() {
   };
 
   const abrirEdicao = (projeto: Project) => {
-    const { id: _id, criadoEm: _criadoEm, demo: _demo, ...rest } = projeto;
-    setForm({ ...rest, prazo: rest.prazo.slice(0, 10) });
+    setForm({
+      nome: projeto.nome,
+      descricao: projeto.descricao,
+      status: projeto.status,
+      responsavelId: projeto.responsavelId,
+      progresso: projeto.progresso,
+      prioridade: projeto.prioridade,
+      prazo: projeto.prazo.slice(0, 10),
+    });
     setErro("");
     setCriando(false);
     setEditando(projeto);
@@ -71,18 +91,24 @@ export function Projects() {
       setErro("Informe o nome do projeto.");
       return;
     }
-    const payload: FormState = {
+    const base: FormState = {
       ...form,
       nome: form.nome.trim(),
       progresso: Math.max(0, Math.min(100, Number(form.progresso) || 0)),
       prazo: new Date(form.prazo || Date.now()).toISOString(),
     };
     if (editando) {
-      dispatch({ type: "projeto/atualizar", payload: { ...editando, ...payload } });
+      dispatch({ type: "projeto/atualizar", payload: { ...editando, ...base } });
     } else {
-      dispatch({ type: "projeto/criar", payload });
+      dispatch({ type: "projeto/criar", payload: { ...base, origem: "cadastrado" } });
     }
     fechar();
+  };
+
+  const confirmarExclusao = () => {
+    if (!confirmando) return;
+    dispatch({ type: "projeto/remover", payload: { id: confirmando.id } });
+    setConfirmando(null);
   };
 
   return (
@@ -124,7 +150,7 @@ export function Projects() {
         <EmptyState
           icon={<FolderKanban className="h-5 w-5" />}
           title="Nenhum projeto encontrado"
-          description="Ajuste a busca ou cadastre um novo projeto demonstrativo."
+          description="Ajuste a busca ou os filtros, ou cadastre um novo projeto."
           action={
             <button type="button" className="btn-primary" onClick={abrirCriacao}>
               <Plus className="h-4 w-4" />
@@ -141,7 +167,7 @@ export function Projects() {
                   <h3 className="truncate text-base font-semibold text-slate-50">{projeto.nome}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-slate-400">{projeto.descricao}</p>
                 </div>
-                {projeto.demo && <DemoBadge compact />}
+                <OrigemBadge origem={projeto.origem} />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -176,7 +202,7 @@ export function Projects() {
                 <button
                   type="button"
                   className="btn-danger"
-                  onClick={() => dispatch({ type: "projeto/remover", payload: { id: projeto.id } })}
+                  onClick={() => setConfirmando(projeto)}
                   aria-label={`Excluir ${projeto.nome}`}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -235,9 +261,7 @@ export function Projects() {
               id="projeto-status"
               className="field"
               value={form.status}
-              onChange={(event) =>
-                setForm({ ...form, status: event.target.value as ProjectStatus })
-              }
+              onChange={(event) => setForm({ ...form, status: event.target.value as ProjectStatus })}
             >
               {(Object.keys(PROJECT_STATUS_LABEL) as ProjectStatus[]).map((status) => (
                 <option key={status} value={status}>
@@ -254,9 +278,7 @@ export function Projects() {
               id="projeto-prioridade"
               className="field"
               value={form.prioridade}
-              onChange={(event) =>
-                setForm({ ...form, prioridade: event.target.value as Priority })
-              }
+              onChange={(event) => setForm({ ...form, prioridade: event.target.value as Priority })}
             >
               {(Object.keys(PRIORITY_LABEL) as Priority[]).map((prioridade) => (
                 <option key={prioridade} value={prioridade}>
@@ -273,9 +295,7 @@ export function Projects() {
               id="projeto-responsavel"
               className="field"
               value={form.responsavelId ?? ""}
-              onChange={(event) =>
-                setForm({ ...form, responsavelId: event.target.value || null })
-              }
+              onChange={(event) => setForm({ ...form, responsavelId: event.target.value || null })}
             >
               <option value="">Sem responsável</option>
               {state.agentes.map((agente) => (
@@ -314,6 +334,20 @@ export function Projects() {
         </div>
         {erro && <p className="mt-3 text-sm text-rose-300">{erro}</p>}
       </Modal>
+
+      <ConfirmDialog
+        open={confirmando !== null}
+        title="Excluir projeto"
+        description={
+          confirmando
+            ? `Tem certeza que deseja excluir "${confirmando.nome}"? Tarefas e missões vinculadas serão desassociadas.`
+            : ""
+        }
+        confirmLabel="Excluir"
+        tone="danger"
+        onConfirm={confirmarExclusao}
+        onCancel={() => setConfirmando(null)}
+      />
     </div>
   );
 }

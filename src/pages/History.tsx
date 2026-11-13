@@ -1,5 +1,15 @@
 import { useMemo, useState } from "react";
-import { Activity as ActivityIcon, Bot, FolderKanban, ListChecks, Search } from "lucide-react";
+import {
+  Activity as ActivityIcon,
+  Bot,
+  Cpu,
+  Database,
+  FolderKanban,
+  ListChecks,
+  Plug,
+  Search,
+  Target,
+} from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import type { ActivityType } from "../types";
@@ -8,21 +18,33 @@ const tipoLabel: Record<ActivityType, string> = {
   agente: "Agente",
   projeto: "Projeto",
   tarefa: "Tarefa",
+  missao: "Missão",
+  integracao: "Integração",
+  execucao: "Execução",
   sistema: "Sistema",
+  backup: "Backup",
 };
 
 const tipoIcon: Record<ActivityType, typeof ActivityIcon> = {
   agente: Bot,
   projeto: FolderKanban,
   tarefa: ListChecks,
+  missao: Target,
+  integracao: Plug,
+  execucao: Cpu,
   sistema: ActivityIcon,
+  backup: Database,
 };
 
 const tipoCor: Record<ActivityType, string> = {
-  agente: "text-fire border-fire/30 bg-fire/10",
+  agente: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10",
   projeto: "text-cyan-300 border-cyan-400/30 bg-cyan-400/10",
   tarefa: "text-violet-300 border-violet-400/30 bg-violet-400/10",
+  missao: "text-fire border-fire/30 bg-fire/10",
+  integracao: "text-cyan-300 border-cyan-400/30 bg-cyan-400/10",
+  execucao: "text-violet-300 border-violet-400/30 bg-violet-400/10",
   sistema: "text-slate-300 border-white/10 bg-white/5",
+  backup: "text-slate-300 border-white/10 bg-white/5",
 };
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {

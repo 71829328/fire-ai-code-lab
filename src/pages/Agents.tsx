@@ -1,36 +1,46 @@
 import { useMemo, useState } from "react";
-import { Bot, Filter, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Bot, Filter, Pencil, Plus, Search, ShieldAlert, Trash2 } from "lucide-react";
 import { useStore } from "../store/StoreContext";
+import { computeStats } from "../store/selectors";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { Modal } from "../components/ui/Modal";
 import { EmptyState } from "../components/ui/EmptyState";
-import { AgentStatusBadge, DemoBadge } from "../components/ui/badges";
+import { AgentStatusBadge, ConnectionBadge, OrigemBadge } from "../components/ui/badges";
 import { ProgressBar } from "../components/charts/Charts";
-import {
-  AGENT_STATUS_LABEL,
-  type Agent,
-  type AgentStatus,
-} from "../types";
+import { AGENT_STATUS_LABEL, type Agent, type AgentStatus, type Origem } from "../types";
 
-type FormState = Omit<Agent, "id" | "criadoEm" | "demo">;
+// Campos editáveis no formulário. Origem/conexão/verificação não são editáveis:
+// a origem é definida no cadastro e a conexão só muda com verificação real.
+type FormState = Omit<
+  Agent,
+  "id" | "criadoEm" | "origem" | "conexao" | "provedorId" | "verificadoEm"
+>;
+
+type OrigemFiltro = "todos" | Origem;
 
 const emptyForm: FormState = {
   nome: "",
   papel: "",
-  status: "ativo",
+  status: "disponivel",
   modelo: "FIRE-Core 3",
   proficiencia: 70,
   tarefasConcluidas: 0,
   descricao: "",
 };
 
+const clampProficiencia = (valor: number) => Math.max(0, Math.min(100, Number(valor) || 0));
+
 export function Agents() {
   const { state, dispatch } = useStore();
+  const stats = computeStats(state);
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<AgentStatus | "todos">("todos");
-  const [editando, setEditando] = useState<Agent | null>(null);
+  const [filtroStatus, setFiltroStatus] = useState<AgentStatus | "todos">("todos");
+  const [filtroOrigem, setFiltroOrigem] = useState<OrigemFiltro>("todos");
   const [criando, setCriando] = useState(false);
+  const [editando, setEditando] = useState<Agent | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [erro, setErro] = useState("");
+  const [confirmando, setConfirmando] = useState<Agent | null>(null);
 
   const agentesFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -40,10 +50,11 @@ export function Agents() {
         agente.nome.toLowerCase().includes(termo) ||
         agente.papel.toLowerCase().includes(termo) ||
         agente.modelo.toLowerCase().includes(termo);
-      const combinaFiltro = filtro === "todos" || agente.status === filtro;
-      return combinaBusca && combinaFiltro;
+      const combinaStatus = filtroStatus === "todos" || agente.status === filtroStatus;
+      const combinaOrigem = filtroOrigem === "todos" || agente.origem === filtroOrigem;
+      return combinaBusca && combinaStatus && combinaOrigem;
     });
-  }, [state.agentes, busca, filtro]);
+  }, [state.agentes, busca, filtroStatus, filtroOrigem]);
 
   const abrirCriacao = () => {
     setForm(emptyForm);
@@ -53,8 +64,15 @@ export function Agents() {
   };
 
   const abrirEdicao = (agente: Agent) => {
-    const { id: _id, criadoEm: _criadoEm, demo: _demo, ...rest } = agente;
-    setForm(rest);
+    setForm({
+      nome: agente.nome,
+      papel: agente.papel,
+      status: agente.status,
+      modelo: agente.modelo,
+      proficiencia: agente.proficiencia,
+      tarefasConcluidas: agente.tarefasConcluidas,
+      descricao: agente.descricao,
+    });
     setErro("");
     setCriando(false);
     setEditando(agente);
@@ -71,23 +89,65 @@ export function Agents() {
       setErro("Informe ao menos o nome e o papel do agente.");
       return;
     }
-    const payload: FormState = {
+    const base = {
       ...form,
       nome: form.nome.trim(),
       papel: form.papel.trim(),
-      proficiencia: Math.max(0, Math.min(100, Number(form.proficiencia) || 0)),
+      proficiencia: clampProficiencia(form.proficiencia),
       tarefasConcluidas: Math.max(0, Number(form.tarefasConcluidas) || 0),
     };
     if (editando) {
-      dispatch({ type: "agente/atualizar", payload: { ...editando, ...payload } });
+      // Passa o agente completo; o reducer preserva conexao/verificadoEm.
+      dispatch({ type: "agente/atualizar", payload: { ...editando, ...base } });
     } else {
-      dispatch({ type: "agente/criar", payload });
+      dispatch({
+        type: "agente/criar",
+        payload: {
+          ...base,
+          origem: "cadastrado",
+          conexao: "desconectado",
+          provedorId: null,
+          verificadoEm: null,
+        },
+      });
     }
     fechar();
   };
 
+  const confirmarExclusao = () => {
+    if (!confirmando) return;
+    dispatch({ type: "agente/remover", payload: { id: confirmando.id } });
+    setConfirmando(null);
+  };
+
+  const indicadores = [
+    { label: "Total", value: stats.totalAgentes },
+    { label: "Cadastrados", value: stats.agentesCadastrados },
+    { label: "Demonstrativos", value: stats.agentesDemonstrativos },
+    { label: "Conectados", value: stats.agentesConectados },
+  ];
+
   return (
     <div className="space-y-5">
+      <section className="glass grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
+        {indicadores.map((item) => (
+          <div key={item.label} className="glass-soft px-3 py-2 text-center">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">{item.label}</p>
+            <p className="text-xl font-bold text-slate-100">{item.value}</p>
+          </div>
+        ))}
+      </section>
+
+      {stats.agentesConectados === 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>
+            Nenhum agente possui conexão verificada — os registros são demonstrativos ou cadastrados
+            localmente.
+          </p>
+        </div>
+      )}
+
       <div className="glass flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -103,8 +163,8 @@ export function Agents() {
           <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <select
             className="field pl-9"
-            value={filtro}
-            onChange={(event) => setFiltro(event.target.value as AgentStatus | "todos")}
+            value={filtroStatus}
+            onChange={(event) => setFiltroStatus(event.target.value as AgentStatus | "todos")}
             aria-label="Filtrar por status"
           >
             <option value="todos">Todos os status</option>
@@ -113,6 +173,19 @@ export function Agents() {
                 {AGENT_STATUS_LABEL[status]}
               </option>
             ))}
+          </select>
+        </div>
+        <div className="relative sm:w-52">
+          <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <select
+            className="field pl-9"
+            value={filtroOrigem}
+            onChange={(event) => setFiltroOrigem(event.target.value as OrigemFiltro)}
+            aria-label="Filtrar por origem"
+          >
+            <option value="todos">Todas as origens</option>
+            <option value="cadastrado">Cadastrado</option>
+            <option value="demonstrativo">Demonstração</option>
           </select>
         </div>
         <button type="button" className="btn-primary" onClick={abrirCriacao}>
@@ -125,7 +198,7 @@ export function Agents() {
         <EmptyState
           icon={<Bot className="h-5 w-5" />}
           title="Nenhum agente encontrado"
-          description="Ajuste a busca ou os filtros, ou cadastre um novo agente demonstrativo."
+          description="Ajuste a busca ou os filtros, ou cadastre um novo agente."
           action={
             <button type="button" className="btn-primary" onClick={abrirCriacao}>
               <Plus className="h-4 w-4" />
@@ -150,11 +223,12 @@ export function Agents() {
                       <p className="text-xs text-slate-400">{agente.papel}</p>
                     </div>
                   </div>
-                  {agente.demo && <DemoBadge compact />}
+                  <OrigemBadge origem={agente.origem} />
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <AgentStatusBadge status={agente.status} />
+                  <ConnectionBadge conexao={agente.conexao} />
                   <span className="chip border-white/10 bg-white/5 text-slate-300">
                     {agente.modelo}
                   </span>
@@ -172,9 +246,7 @@ export function Agents() {
 
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-center">
                   <div className="glass-soft px-3 py-2">
-                    <dt className="text-[11px] uppercase tracking-wide text-slate-400">
-                      Tarefas
-                    </dt>
+                    <dt className="text-[11px] uppercase tracking-wide text-slate-400">Tarefas</dt>
                     <dd className="text-lg font-bold text-slate-100">{tarefas.length}</dd>
                   </div>
                   <div className="glass-soft px-3 py-2">
@@ -199,7 +271,7 @@ export function Agents() {
                   <button
                     type="button"
                     className="btn-danger"
-                    onClick={() => dispatch({ type: "agente/remover", payload: { id: agente.id } })}
+                    onClick={() => setConfirmando(agente)}
                     aria-label={`Excluir ${agente.nome}`}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -214,7 +286,11 @@ export function Agents() {
       <Modal
         open={criando || editando !== null}
         title={editando ? "Editar agente" : "Novo agente"}
-        description="Os dados ficam salvos apenas neste navegador (armazenamento local)."
+        description={
+          editando
+            ? "A conexão e a verificação não mudam pela edição; apenas uma integração real as altera."
+            : "Agentes cadastrados aqui entram como locais, sem conexão verificada."
+        }
         onClose={fechar}
         footer={
           <>
@@ -293,9 +369,7 @@ export function Agents() {
               max={100}
               className="field"
               value={form.proficiencia}
-              onChange={(event) =>
-                setForm({ ...form, proficiencia: Number(event.target.value) })
-              }
+              onChange={(event) => setForm({ ...form, proficiencia: Number(event.target.value) })}
             />
           </div>
           <div className="sm:col-span-2">
@@ -313,6 +387,20 @@ export function Agents() {
         </div>
         {erro && <p className="mt-3 text-sm text-rose-300">{erro}</p>}
       </Modal>
+
+      <ConfirmDialog
+        open={confirmando !== null}
+        title="Excluir agente"
+        description={
+          confirmando
+            ? `Tem certeza que deseja excluir "${confirmando.nome}"? Vínculos com projetos, tarefas e missões serão desfeitos.`
+            : ""
+        }
+        confirmLabel="Excluir"
+        tone="danger"
+        onConfirm={confirmarExclusao}
+        onCancel={() => setConfirmando(null)}
+      />
     </div>
   );
 }
