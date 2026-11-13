@@ -18,7 +18,7 @@ import {
   Plug,
   PlugZap,
   RotateCcw,
-  Sparkles,
+  Flame,
   Target,
   Workflow,
   X,
@@ -122,7 +122,7 @@ export function AppShell({ page, onNavigate, title, subtitle, children }: AppShe
   };
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="fire-shell flex min-h-screen w-full">
       {mobileOpen && (
         <div
           className="fixed inset-0 z-30 bg-night-950/70 backdrop-blur-sm lg:hidden"
@@ -142,7 +142,7 @@ export function AppShell({ page, onNavigate, title, subtitle, children }: AppShe
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 border-b border-white/10 bg-night-950/70 backdrop-blur-xl">
+        <header className="fire-header sticky top-0 z-20 border-b border-white/10 bg-night-950/70 backdrop-blur-xl">
           <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6">
             <button
               type="button"
@@ -240,23 +240,23 @@ function Sidebar({
   return (
     <aside
       className={[
-        "z-40 flex shrink-0 flex-col border-r border-white/10 bg-night-900/80 backdrop-blur-xl transition-all duration-300",
-        "fixed inset-y-0 left-0 overflow-y-auto lg:static lg:translate-x-0",
+        "fire-sidebar z-40 flex shrink-0 flex-col border-r border-white/10 bg-night-900/80 backdrop-blur-xl transition-all duration-300",
+        "fixed inset-y-0 left-0 overflow-y-auto lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full",
         collapsed ? "lg:w-[84px]" : "lg:w-64",
         "w-64",
       ].join(" ")}
     >
       <div className="flex items-center gap-3 px-4 py-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-fire-gradient shadow-glow">
-          <Sparkles className="h-5 w-5 text-night-950" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl fire-brand-mark shadow-glow">
+          <Flame className="h-6 w-6 text-orange-200" />
         </div>
         {!collapsed && (
           <div className="min-w-0">
             <p className="truncate text-sm font-bold tracking-wide text-slate-50">
-              FIRE COMMAND
+              FIRE INTELLIGENCE
             </p>
-            <p className="truncate text-[11px] text-slate-400">CENTRAL DE MISSÕES</p>
+            <p className="truncate text-[11px] text-slate-400">AGENT COMMAND CENTER</p>
           </div>
         )}
         <button
@@ -291,7 +291,7 @@ function Sidebar({
                   className={[
                     "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                     active
-                      ? "border border-fire/40 bg-fire/10 text-fire-soft shadow-glow"
+                      ? "fire-nav-active border border-fire/40 bg-fire/10 text-fire-soft shadow-glow"
                       : "border border-transparent text-slate-300 hover:border-white/10 hover:bg-white/5 hover:text-slate-100",
                     collapsed ? "lg:justify-center" : "",
                   ].join(" ")}
