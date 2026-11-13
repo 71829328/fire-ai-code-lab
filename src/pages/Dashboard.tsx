@@ -85,7 +85,7 @@ export function Dashboard() {
 
       <div className="fire-command-grid">
         <FireCore />
-        <section className="glass fire-roster p-5"><h2 className="mb-4 text-sm font-semibold text-slate-100">Agentes cadastrados</h2><ul className="space-y-2">{state.agentes.slice(0,6).map(a => <li key={a.id} className="fire-roster-item"><Bot className="h-5 w-5 shrink-0 text-cyan-300" /><span className="min-w-0 flex-1 truncate text-sm text-slate-100">{a.nome}</span></li>)}</ul>{state.agentes.length===0 && <p className="text-sm text-slate-400">Nenhum agente cadastrado.</p>}<p className="mt-4 text-xs text-slate-400">Cadastro local não comprova conexão externa.</p></section>
+        <section className="glass fire-roster p-5"><h2 className="mb-4 text-sm font-semibold text-slate-100">Agentes do ambiente local</h2><ul className="space-y-2">{state.agentes.slice(0,6).map(a => <li key={a.id} className="fire-roster-item"><Bot className="h-5 w-5 shrink-0 text-cyan-300" /><div className="min-w-0 flex-1"><span className="block truncate text-sm text-slate-100">{a.nome}</span><span className="text-xs text-slate-400">{a.origem === "demonstrativo" ? "Demonstração" : "Cadastro local"}</span></div></li>)}</ul>{state.agentes.length===0 && <p className="text-sm text-slate-400">Nenhum agente cadastrado.</p>}<p className="mt-4 text-xs text-slate-400">Cadastro local não comprova conexão externa.</p></section>
       </div>
       <section className="glass-soft flex flex-wrap items-center gap-x-6 gap-y-2 p-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
