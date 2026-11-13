@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   Menu,
   Plug,
+  PlugZap,
   RotateCcw,
   Sparkles,
   Target,
@@ -42,6 +43,7 @@ export type PageKey =
   | "kanban"
   | "executor"
   | "integracoes"
+  | "conexoes"
   | "historico"
   | "dados"
   | "codelab";
@@ -84,6 +86,7 @@ export const NAV_GROUPS: { titulo: string; itens: NavItem[] }[] = [
     itens: [
       { key: "executor", label: "Executor local", icon: Cpu },
       { key: "integracoes", label: "Integrações", icon: Plug },
+      { key: "conexoes", label: "Central de Conexões", icon: PlugZap },
     ],
   },
   {

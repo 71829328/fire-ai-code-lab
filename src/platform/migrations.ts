@@ -30,6 +30,14 @@ export const MIGRACOES: Migracao[] = [
       "Índices de desempenho, função de verificação de dependências e gatilhos de atualização de atualizadoEm.",
     aplicada: false,
   },
+  {
+    versao: "0004",
+    nome: "seguranca",
+    arquivo: "backend/migrations/0004_seguranca.sql",
+    descricao:
+      "Endurecimento (LAB-004): imutabilidade da auditoria e dos eventos, proteção contra escalada de papel e troca de tenant, integridade de referências entre organizações, aprovação crítica, grants de menor privilégio e search_path seguro.",
+    aplicada: false,
+  },
 ];
 
 export function listarMigracoes(): Migracao[] {

@@ -5,13 +5,21 @@
 -- Objetivo: Row Level Security + isolamento entre organizações + autorização
 -- por papel (proprietário, administrador, operador, revisor, observador).
 --
--- Modelo de identidade:
---   - app.usuario_atual()      → uuid do usuário autenticado.
+-- Modelo de identidade (ENDURECIDO no LAB-004):
+--   - app.usuario_atual()      → uuid do usuário autenticado, SEMPRE via auth.uid().
 --   - app.organizacao_atual()  → organização do usuário autenticado.
 --   - app.papel_atual()        → papel do usuário autenticado.
 --
--- Em Supabase, o JWT traz "sub" em request.jwt.claim.sub; aqui aceitamos
--- também o ajuste local app.usuario_id para testes/homologação controlada.
+-- CORREÇÃO OBRIGATÓRIA (LAB-004): a versão anterior aceitava
+-- current_setting('app.usuario_id', true) como identidade ALTERNATIVA. Isso
+-- permitia FALSIFICAÇÃO DE IDENTIDADE por qualquer sessão capaz de ajustar esse
+-- parâmetro — escalada de privilégio e quebra do isolamento entre organizações.
+-- Esse caminho foi REMOVIDO do código de produção: a identidade vem
+-- exclusivamente de auth.uid(), preenchido pelo Supabase a partir do JWT
+-- verificado (não controlável pelo usuário).
+-- Identidades de teste existem SOMENTE em ambiente local isolado
+-- (backend/migrations/local/0000_auth_stub_local.sql), que nunca é aplicado em
+-- banco real/homologação/produção.
 --
 -- !!! NÃO APLIQUE SEM AUTORIZAÇÃO (a guarda abaixo bloqueia por padrão) !!!
 -- =====================================================================
@@ -30,16 +38,16 @@ create schema if not exists app;
 -- ---------------------------------------------------------------------
 -- Funções auxiliares de identidade
 -- ---------------------------------------------------------------------
+-- Identidade autenticada confiável. auth.uid() resolve o "sub" do JWT
+-- verificado (request.jwt.claim.sub). NÃO existe caminho alternativo por GUC —
+-- essa era exatamente a falha corrigida no LAB-004.
 create or replace function app.usuario_atual() returns uuid
 language sql stable as $$
-  select coalesce(
-    nullif(current_setting('app.usuario_id', true), ''),
-    nullif(current_setting('request.jwt.claim.sub', true), '')
-  )::uuid;
+  select auth.uid();
 $$;
 
 create or replace function app.organizacao_atual() returns uuid
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = public, pg_temp as $$
   select organizacao_id
     from public.usuarios
    where id = app.usuario_atual()
@@ -48,7 +56,7 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 create or replace function app.papel_atual() returns text
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = public, pg_temp as $$
   select papel::text
     from public.usuarios
    where id = app.usuario_atual()

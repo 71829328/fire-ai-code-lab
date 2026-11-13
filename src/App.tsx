@@ -13,6 +13,7 @@ import { Projects } from "./pages/Projects";
 import { Kanban } from "./pages/Kanban";
 import { LocalExecutor } from "./pages/LocalExecutor";
 import { Integrations } from "./pages/Integrations";
+import { Conexoes } from "./pages/Conexoes";
 import { History } from "./pages/History";
 import { DataBackup } from "./pages/DataBackup";
 import { CodeLab } from "./pages/CodeLab";
@@ -70,6 +71,10 @@ const PAGINAS: Record<PageKey, { titulo: string; subtitulo: string }> = {
     titulo: "Integrações",
     subtitulo: "Interfaces operacionais desativadas até haver acesso real autorizado.",
   },
+  conexoes: {
+    titulo: "Central de Conexões",
+    subtitulo: "Estado real do backend e dos provedores: configurado, autorizado, conectado e verificado.",
+  },
   historico: {
     titulo: "Histórico de Atividades",
     subtitulo: "Linha do tempo das ações realizadas na central.",
@@ -103,6 +108,7 @@ export default function App() {
       {page === "kanban" && <Kanban />}
       {page === "executor" && <LocalExecutor />}
       {page === "integracoes" && <Integrations />}
+      {page === "conexoes" && <Conexoes />}
       {page === "historico" && <History />}
       {page === "dados" && <DataBackup />}
       {page === "codelab" && <CodeLab />}

@@ -1,0 +1,255 @@
+== Subindo cluster PostgreSQL efêmero (porta 54134) ==
+== Aplicando stub local de identidade + migrações 0001..0004 ==
+   aplicada: 0001_init
+psql:/workspace/backend/migrations/0002_rls.sql:108: NOTICE:  policy "organizacoes_isolamento" for relation "public.organizacoes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:115: NOTICE:  policy "usuarios_leitura" for relation "public.usuarios" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:119: NOTICE:  policy "usuarios_escrita" for relation "public.usuarios" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "agentes_leitura" for relation "public.agentes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "projetos_leitura" for relation "public.projetos" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "missoes_leitura" for relation "public.missoes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "evidencias_leitura" for relation "public.evidencias" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "agentes_escrita" for relation "public.agentes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "projetos_escrita" for relation "public.projetos" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:155: NOTICE:  policy "missoes_escrita" for relation "public.missoes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:158: NOTICE:  policy "evidencias_registro" for relation "public.evidencias" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:164: NOTICE:  policy "evidencias_atualizacao" for relation "public.evidencias" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:175: NOTICE:  policy "mission_runs_leitura" for relation "public.mission_runs" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:179: NOTICE:  policy "mission_runs_escrita" for relation "public.mission_runs" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:185: NOTICE:  policy "run_attempts_acesso" for relation "public.run_attempts" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:193: NOTICE:  policy "run_eventos_acesso" for relation "public.run_eventos" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:202: NOTICE:  policy "missao_dependencias_acesso" for relation "public.missao_dependencias" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:213: NOTICE:  policy "aprovacoes_leitura" for relation "public.aprovacoes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:217: NOTICE:  policy "aprovacoes_solicitacao" for relation "public.aprovacoes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:223: NOTICE:  policy "aprovacoes_decisao" for relation "public.aprovacoes" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:232: NOTICE:  policy "audit_log_leitura" for relation "public.audit_log" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:236: NOTICE:  policy "audit_log_insercao" for relation "public.audit_log" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:243: NOTICE:  policy "usage_metrics_leitura" for relation "public.usage_metrics" does not exist, skipping
+psql:/workspace/backend/migrations/0002_rls.sql:247: NOTICE:  policy "usage_metrics_escrita" for relation "public.usage_metrics" does not exist, skipping
+   aplicada: 0002_rls
+psql:/workspace/backend/migrations/0003_indices_funcoes.sql:93: NOTICE:  trigger "missoes_touch" for relation "public.missoes" does not exist, skipping
+psql:/workspace/backend/migrations/0003_indices_funcoes.sql:98: NOTICE:  trigger "mission_runs_touch" for relation "public.mission_runs" does not exist, skipping
+psql:/workspace/backend/migrations/0003_indices_funcoes.sql:116: NOTICE:  trigger "mission_runs_evento_inicial" for relation "public.mission_runs" does not exist, skipping
+   aplicada: 0003_indices_funcoes
+psql:/workspace/backend/migrations/0004_seguranca.sql:39: NOTICE:  trigger "audit_log_imutavel" for relation "public.audit_log" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:47: NOTICE:  trigger "run_eventos_imutavel" for relation "public.run_eventos" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:72: NOTICE:  trigger "usuarios_protege" for relation "public.usuarios" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:167: NOTICE:  trigger "projetos_tenant" for relation "public.projetos" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:167: NOTICE:  trigger "missoes_tenant" for relation "public.missoes" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:167: NOTICE:  trigger "mission_runs_tenant" for relation "public.mission_runs" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:167: NOTICE:  trigger "evidencias_tenant" for relation "public.evidencias" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:167: NOTICE:  trigger "aprovacoes_tenant" for relation "public.aprovacoes" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:167: NOTICE:  trigger "usage_metrics_tenant" for relation "public.usage_metrics" does not exist, skipping
+psql:/workspace/backend/migrations/0004_seguranca.sql:184: NOTICE:  trigger "aprovacoes_protege" for relation "public.aprovacoes" does not exist, skipping
+   aplicada: 0004_seguranca
+== Executando asserções de RLS ==
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:112: NOTICE:  PASS  isolamento A: vê apenas 1 agente
+ igual_int 
+-----------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:113: NOTICE:  PASS  isolamento A: vê apenas 1 missão
+ igual_int 
+-----------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:115: NOTICE:  PASS  organizacao_atual é a Org A
+ igual_texto 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:121: NOTICE:  PASS  insert de agente em outra organização é bloqueado  (bloqueado: new row violates row-level security policy for table "agentes")
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:127: NOTICE:  PASS  referência cruzada entre organizações é bloqueada  (bloqueado: Referência cruzada entre organizações (projetos.responsavel_id).)
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:132: NOTICE:  PASS  app.usuario_id não falsifica a identidade (continua Org A)
+ igual_texto 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:134: NOTICE:  PASS  app.usuario_id não amplia a visibilidade (ainda 1 agente)
+ igual_int 
+-----------
+ 
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:139: NOTICE:  PASS  isolamento B: vê apenas 1 agente
+ igual_int 
+-----------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:141: NOTICE:  PASS  organizacao_atual é a Org B
+ igual_texto 
+-------------
+ 
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:145: NOTICE:  PASS  sem identidade: nenhum agente visível
+ igual_int 
+-----------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:147: NOTICE:  PASS  sem identidade: organizacao_atual nula
+ igual_texto 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:154: NOTICE:  PASS  usuário inativo: nenhum agente visível
+ igual_int 
+-----------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:163: NOTICE:  PASS  inserção de auditoria é permitida ao usuário
+ deve_passar 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:168: NOTICE:  PASS  auditoria não pode ser alterada (update bloqueado)  (bloqueado: Registros de auditoria são imutáveis (tentativa de UPDATE).)
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:170: NOTICE:  PASS  auditoria não pode ser removida (delete bloqueado)  (bloqueado: Registros de auditoria são imutáveis (tentativa de DELETE).)
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:176: NOTICE:  PASS  administrador não eleva o próprio papel  (bloqueado: Somente o proprietário pode alterar o papel de um usuário.)
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:181: NOTICE:  PASS  usuário não pode mudar de organização  (bloqueado: Alteração de organizacao_id de usuário é proibida.)
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:192: NOTICE:  PASS  operador executa update (RLS restringe às linhas permitidas)
+ deve_passar 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:194: NOTICE:  PASS  operador NÃO alterou a decisão (segue pendente)
+ igual_texto 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaad
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:198: NOTICE:  PASS  revisor decide a aprovação
+ deve_passar 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:200: NOTICE:  PASS  revisor alterou a decisão para aprovado
+ igual_texto 
+-------------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:206: NOTICE:  PASS  usuário cria execução (gera evento inicial automaticamente)
+ deve_passar 
+-------------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:208: NOTICE:  PASS  evento inicial da execução foi registrado
+ igual_int 
+-----------
+ 
+(1 row)
+
+psql:/workspace/backend/tests/rls_assertions.sql:211: NOTICE:  PASS  eventos de execução não podem ser alterados  (bloqueado: Registros de auditoria são imutáveis (tentativa de UPDATE).)
+ deve_falhar 
+-------------
+ 
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+RLS: TODAS AS ASSERÇÕES PASSARAM
+== Concluído: asserções de RLS aprovadas ==
