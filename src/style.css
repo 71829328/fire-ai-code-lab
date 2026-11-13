@@ -1,1 +1,136 @@
-:root{font-family:Inter,system-ui,Arial,sans-serif;color:#e7eef8;background:#0b111d;font-synthesis:none}*{box-sizing:border-box}body{margin:0}main{max-width:1160px;margin:auto;padding:40px 24px}header{margin-bottom:34px}.eyebrow{font-size:12px;letter-spacing:.2em;color:#ff9857;font-weight:700}h1{font-size:clamp(34px,5vw,56px);letter-spacing:-.05em;margin:12px 0}header p,footer{color:#9caec5}h2{font-size:18px;margin:0 0 20px}.workspace{display:grid;grid-template-columns:1.2fr 1fr;gap:22px}.editor,.results{background:#141e2d;border:1px solid #28384d;border-radius:18px;padding:24px}.section-head{display:flex;align-items:start;justify-content:space-between}button{background:#ef823c;border:0;border-radius:8px;color:#111827;font-weight:700;padding:10px 14px;cursor:pointer}label{display:block;font-size:12px;color:#a8b9cc;margin-bottom:12px}textarea{width:100%;height:350px;resize:vertical;border:1px solid #36475e;border-radius:10px;background:#0b1421;color:#dce9fa;padding:16px;font:14px/1.65 ui-monospace,Consolas,monospace}.score{display:flex;align-items:baseline;gap:12px}.score strong{font-size:64px;color:#8fd5ef}.score span,.results>p{color:#9caec5}article{background:#0e1725;border:1px solid #2c3b50;border-radius:12px;padding:14px;margin:12px 0}article div{display:flex;justify-content:space-between;gap:12px}article p{margin:12px 0 6px}small{color:#aabbd0}.high{color:#ff8c8c}.medium{color:#ffd188}.low{color:#a5d5fa}.clean{color:#8ee0ad}footer{font-size:12px;margin-top:30px;line-height:1.6}@media(max-width:760px){.workspace{grid-template-columns:1fr}main{padding:24px 16px}}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-night-950 text-slate-200 antialiased;
+    font-feature-settings: "cv11", "ss01";
+    background-image:
+      radial-gradient(900px 520px at 12% -10%, rgba(255, 122, 26, 0.16), transparent 60%),
+      radial-gradient(820px 480px at 92% 4%, rgba(34, 211, 238, 0.12), transparent 62%),
+      radial-gradient(760px 520px at 60% 110%, rgba(168, 85, 247, 0.14), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: rgba(255, 122, 26, 0.35);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+  }
+}
+
+@layer components {
+  /* Superfície com efeito de vidro, base do visual futurista. */
+  .glass {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-panel;
+  }
+
+  .glass-soft {
+    @apply rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-lg;
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300 hover:border-fire/40 hover:bg-white/[0.07] hover:shadow-glow;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-night-900/70 px-3 py-2 text-sm text-slate-100
+      placeholder:text-slate-500 outline-none transition
+      focus:border-fire/60 focus:ring-2 focus:ring-fire/25;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
+      transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
+      focus:ring-offset-night-950 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-fire-gradient text-night-950 shadow-glow hover:brightness-110 focus:ring-fire/50;
+  }
+
+  .btn-ghost {
+    @apply btn border border-white/10 bg-white/5 text-slate-200 hover:border-white/25 hover:bg-white/10 focus:ring-white/20;
+  }
+
+  .btn-danger {
+    @apply btn border border-rose-500/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 focus:ring-rose-500/40;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold;
+  }
+
+  .demo-badge {
+    @apply chip border-amber-400/30 bg-amber-400/10 text-amber-200;
+  }
+
+  /* Borda luminosa animada usada em elementos de destaque. */
+  .glow-ring {
+    position: relative;
+  }
+
+  .glow-ring::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(120deg, rgba(255, 122, 26, 0.7), rgba(34, 211, 238, 0.5), rgba(168, 85, 247, 0.7));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(120deg, #ffb066 0%, #ff7a1a 40%, #22d3ee 100%);
+  }
+
+  .stagger > * {
+    animation: fade-up 0.45s ease-out both;
+  }
+  .stagger > *:nth-child(2) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.1s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.15s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.2s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.25s; }
+}
