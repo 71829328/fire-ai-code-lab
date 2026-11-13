@@ -12,9 +12,15 @@ premium (fundo escuro, glassmorphism e acentos FIRE: laranja, azul-ciano e roxo)
 ## Histórico de missões
 
 - **LAB-001** — FIRE Agent Command Center: painel de agentes, projetos, tarefas e Kanban.
-- **LAB-002** (esta entrega) — evolução para **central de missões**, correções da auditoria CTO,
-  camada operacional e endurecimento de segurança/qualidade. Não houve reconstrução: a base do
-  LAB-001 foi preservada e ampliada.
+- **LAB-002** — evolução para **central de missões**, correções da auditoria CTO, camada
+  operacional e endurecimento de segurança/qualidade.
+- **LAB-003** (esta entrega) — **OPERATIONAL CORE**: camada de persistência desacoplada
+  (Supabase/local), schema PostgreSQL com migrations versionadas, motor de orquestração de
+  missões, adaptadores de agentes, inteligência operacional, central de evidências e governança
+  (RBAC, auditoria, controle de custos). Não houve reconstrução: a base do LAB-001/LAB-002 foi
+  preservada e ampliada.
+
+> A documentação técnica detalhada do LAB-003 está em [docs/LAB-003.md](docs/LAB-003.md).
 
 ## Funcionalidades
 
@@ -36,6 +42,28 @@ premium (fundo escuro, glassmorphism e acentos FIRE: laranja, azul-ciano e roxo)
 - **Executor local de demonstração** verificável: processa o texto inteiramente no navegador
   (métricas + checksum FNV-1a reconferido por caminho independente), sem APIs externas, e
   **distingue explicitamente execução local de execução por IA**.
+
+### Núcleo operacional (LAB-003)
+Agrupado no menu sob **“Núcleo operacional”**:
+- **Orquestração** — fila de execução com prioridades, dependências, máquina de estados,
+  concorrência, idempotência, cancelamento, timeout, retentativas controladas e **aprovação humana
+  para operações críticas**. Missões sequenciais e paralelas; histórico completo por execução.
+- **Evidências** — registro estruturado de repositórios, branches, commits, pull requests,
+  deployments, testes, capturas, relatórios, arquivos e bloqueios, com distinção explícita entre
+  **informado pelo agente** e **verificado independentemente**.
+- **Inteligência** — avaliação de agentes e **recomendação** calculadas **apenas com dados
+  observados**; agentes sem execuções aparecem como “Sem dados”.
+- **Adaptadores** — arquitetura extensível (ChatGPT, Codex, ChatGPT Work, TRAE, Manus, FIRE
+  Private AI, agentes personalizados). Integrações não autorizadas **recusam o envio automático** e
+  encaminham para o **fluxo manual assistido** (exportar missão / importar resultado).
+- **Governança** — organizações, usuários e papéis (RBAC), isolamento entre organizações,
+  auditoria das operações, registro de consumo (informado) e painel de migrações (sempre
+  **não aplicadas**).
+
+Backend: **camada de persistência desacoplada** (`MemoryRepository` / `LocalRepository` /
+`SupabaseRepository`) e **schema PostgreSQL versionado** em `backend/migrations/`
+(`0001_init`, `0002_rls`, `0003_indices_funcoes`). Nenhuma migration é aplicada automaticamente e
+o Supabase permanece **desativado** até haver credenciais autorizadas.
 
 ### Correções da auditoria CTO
 - **Cadastrado × demonstrativo × conectado**: distinção explícita; agentes nunca aparecem como
@@ -103,43 +131,66 @@ src/
     backup.ts                 # exportação/importação segura de backup
     localExecutor.ts          # executor local determinístico (não é IA)
     missionPrompt.ts          # geração do prompt completo da missão
+  orchestration/              # motor de orquestração (puro): engine, stateMachine, localRunner, types
+  platform/                   # núcleo operacional: types, authz, guards, validation, migrations,
+                              # persistence (Supabase/local/memória), ops (reducer + auditoria), seed
+  evidence/center.ts          # central de evidências (informado × verificado)
+  intelligence/               # metrics (dados observados) + recommendation
+  adapters/                   # registry, capabilities, manualFlow, types
   store/
     reducer.ts                # lógica pura de estado (ações + atividades)
     StoreContext.tsx          # contexto React + persistência em localStorage
     selectors.ts              # estatísticas e séries para gráficos
   components/
     layout/AppShell.tsx       # menu lateral recolhível + barra superior
-    ui/                       # Modal, badges, ConfirmDialog, CopyButton, PersistenceBanner
+    ui/                       # Modal, badges, ConfirmDialog, CopyButton, PersistenceBanner, opsBadges
     charts/Charts.tsx         # gráficos de rosca, barras e progresso em SVG
   pages/                      # Dashboard, Missions, Approvals, Agents, Projects, Kanban,
-                              # LocalExecutor, Integrations, History, DataBackup, CodeLab
+                              # LocalExecutor, Integrations, History, DataBackup, CodeLab,
+                              # Orchestration, EvidenceCenter, AgentIntelligence, AgentAdapters, Governance
+backend/migrations/           # schema PostgreSQL versionado (0001_init, 0002_rls, 0003_indices_funcoes)
 scripts/
   functional-tests.mjs        # testes funcionais reais + capturas (desktop/mobile)
-docs/screenshots/             # evidências visuais (desktop e mobile)
+docs/
+  LAB-003.md                  # documentação técnica do OPERATIONAL CORE
+  screenshots/                # evidências visuais (desktop e mobile)
 ```
 
 ## Dados e privacidade
 
 - Nenhuma chamada de rede é realizada pela aplicação em tempo de execução.
-- O estado fica apenas no navegador do usuário (`localStorage`, chave
-  `fire-agent-command-center:state:v2`). **Dados & Backup** permite exportar/importar um JSON
-  validado, e **Restaurar demo** recompõe o conjunto demonstrativo inicial.
+- O estado demonstrativo fica apenas no navegador (`localStorage`, chave
+  `fire-agent-command-center:state:v2`) e o núcleo operacional em chaves separadas
+  (`fire-agent-command-center:platform:v1` e `fire-agent-command-center:ops:v1`). **Dados &
+  Backup** permite exportar/importar um JSON validado, e **Restaurar demo** recompõe o conjunto
+  demonstrativo inicial.
 - O módulo legado `src/analyzer.ts` (com `src/analyzer.test.ts`) foi **preservado**, é um
   analisador heurístico puro coberto por testes e é exposto na página **Code Lab**.
 
 ## Segurança
 
 - Nenhuma credencial real é utilizada; nenhum gasto é gerado e nenhum deploy/merge é realizado.
+- **Nenhum token/segredo é armazenado no frontend ou no `localStorage`**: a camada de validação
+  detecta segredos (chaves `sk-`, `Bearer`, AWS, chave privada, JWT, campos de senha/token) e
+  bloqueia a persistência/exportação.
+- Operações externas e gastos permanecem **bloqueados por padrão**; operações críticas exigem
+  aprovação humana; toda mutação relevante gera registro de **auditoria**.
+- Isolamento entre organizações e autorização por papel (RBAC) aplicados em toda operação sensível.
 - Backup passa por validação integral antes de ser aplicado; integrações nunca são ativadas
   sem comprovação de acesso real.
-- `npm audit` sem vulnerabilidades conhecidas após atualização das dependências de
-  desenvolvimento (Vite 8 / Vitest 5).
+- Migrations com **guarda de segurança dupla** (bloqueio no SQL e no código); nenhuma aplicada em
+  banco real.
+- `npm audit` sem vulnerabilidades conhecidas (0 vulnerabilidades) após atualização das
+  dependências de desenvolvimento (Vite 8 / Vitest 5).
 
 ## Limitações
 
 - Os dados são **demonstrativos** e não representam agentes realmente conectados.
-- Não há autenticação, multiusuário, sincronização em nuvem ou backend.
-- As integrações externas permanecem **desativadas** por design (faltam acesso autorizado e validado).
+- Não há autenticação real: a identidade é selecionada na própria interface (demonstração).
+- As integrações externas permanecem **desativadas** por design (faltam autorização e credencial
+  validadas) — o único caminho utilizável é o fluxo manual assistido e o executor local.
+- Supabase está **desativado** (exige projeto/credenciais autorizados) e as **migrations não são
+  aplicadas** sem autorização específica.
 - O arrastar e soltar usa a API nativa de *drag and drop* do HTML5, sem bibliotecas externas.
 - O arquivo `package-lock.json` foi regenerado com o registry oficial do npm para a auditoria de
   dependências; em ambientes com mirror próprio, reinstale com o registry local se necessário.

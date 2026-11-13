@@ -2,10 +2,14 @@ import { useState, type ReactNode } from "react";
 import {
   BadgeCheck,
   Bot,
+  Boxes,
+  Brain,
+  Building2,
   ChevronLeft,
   Code2,
   Cpu,
   Database,
+  FileCheck2,
   FolderKanban,
   History,
   KanbanSquare,
@@ -15,6 +19,7 @@ import {
   RotateCcw,
   Sparkles,
   Target,
+  Workflow,
   X,
 } from "lucide-react";
 import { DemoBadge } from "../ui/badges";
@@ -27,6 +32,11 @@ export type PageKey =
   | "dashboard"
   | "missoes"
   | "aprovacoes"
+  | "orquestracao"
+  | "evidencias"
+  | "inteligencia"
+  | "adaptadores"
+  | "governanca"
   | "agentes"
   | "projetos"
   | "kanban"
@@ -49,6 +59,16 @@ export const NAV_GROUPS: { titulo: string; itens: NavItem[] }[] = [
       { key: "dashboard", label: "Painel", icon: LayoutDashboard },
       { key: "missoes", label: "Central de Missões", icon: Target },
       { key: "aprovacoes", label: "Aprovações", icon: BadgeCheck },
+    ],
+  },
+  {
+    titulo: "Núcleo operacional",
+    itens: [
+      { key: "orquestracao", label: "Orquestração", icon: Workflow },
+      { key: "evidencias", label: "Evidências", icon: FileCheck2 },
+      { key: "inteligencia", label: "Inteligência", icon: Brain },
+      { key: "adaptadores", label: "Adaptadores", icon: Boxes },
+      { key: "governanca", label: "Governança", icon: Building2 },
     ],
   },
   {

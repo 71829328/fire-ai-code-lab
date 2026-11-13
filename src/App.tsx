@@ -3,6 +3,11 @@ import { AppShell, type PageKey } from "./components/layout/AppShell";
 import { Dashboard } from "./pages/Dashboard";
 import { Missions } from "./pages/Missions";
 import { Approvals } from "./pages/Approvals";
+import { Orchestration } from "./pages/Orchestration";
+import { EvidenceCenter } from "./pages/EvidenceCenter";
+import { AgentIntelligence } from "./pages/AgentIntelligence";
+import { AgentAdapters } from "./pages/AgentAdapters";
+import { Governance } from "./pages/Governance";
 import { Agents } from "./pages/Agents";
 import { Projects } from "./pages/Projects";
 import { Kanban } from "./pages/Kanban";
@@ -24,6 +29,26 @@ const PAGINAS: Record<PageKey, { titulo: string; subtitulo: string }> = {
   aprovacoes: {
     titulo: "Painel de Aprovação",
     subtitulo: "Revisão técnica das missões aguardando aprovação.",
+  },
+  orquestracao: {
+    titulo: "Orquestração de Missões",
+    subtitulo: "Fila, prioridades, dependências, concorrência, timeout e aprovação humana.",
+  },
+  evidencias: {
+    titulo: "Central de Evidências",
+    subtitulo: "Separação clara entre evidências informadas e verificadas independentemente.",
+  },
+  inteligencia: {
+    titulo: "Inteligência Operacional",
+    subtitulo: "Métricas e recomendação calculadas apenas com dados observados.",
+  },
+  adaptadores: {
+    titulo: "Adaptadores de Agentes",
+    subtitulo: "Status real de cada integração e fluxo manual assistido quando não autorizada.",
+  },
+  governanca: {
+    titulo: "Governança e Auditoria",
+    subtitulo: "Organizações, papéis, permissões, consumo informado e trilha de auditoria.",
   },
   agentes: {
     titulo: "Agentes",
@@ -68,6 +93,11 @@ export default function App() {
       {page === "dashboard" && <Dashboard />}
       {page === "missoes" && <Missions />}
       {page === "aprovacoes" && <Approvals />}
+      {page === "orquestracao" && <Orchestration />}
+      {page === "evidencias" && <EvidenceCenter />}
+      {page === "inteligencia" && <AgentIntelligence />}
+      {page === "adaptadores" && <AgentAdapters />}
+      {page === "governanca" && <Governance />}
       {page === "agentes" && <Agents />}
       {page === "projetos" && <Projects />}
       {page === "kanban" && <Kanban />}

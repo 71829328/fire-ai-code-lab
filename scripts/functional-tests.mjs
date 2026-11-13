@@ -58,6 +58,27 @@ async function shot(page, nome) {
   await page.screenshot({ path: `${OUT}/${nome}.png` });
 }
 
+// Seleciona, em um <select>, a opção cujo texto contém o rótulo informado.
+// Usa a API nativa (dispara os eventos que o React escuta no componente controlado).
+async function selecionarPorOpcao(page, rotulo) {
+  const handles = await page.$$("select");
+  for (const handle of handles) {
+    const contem = await handle.evaluate(
+      (el, texto) => [...el.options].some((o) => o.textContent && o.textContent.includes(texto)),
+      rotulo
+    );
+    if (contem) {
+      const valor = await handle.evaluate(
+        (el, texto) => [...el.options].find((o) => o.textContent && o.textContent.includes(texto))?.value ?? "",
+        rotulo
+      );
+      await handle.select(valor);
+      return true;
+    }
+  }
+  return false;
+}
+
 const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: "new",
@@ -223,6 +244,106 @@ try {
   await irPara(page, "Code Lab");
   await shot(page, "14-code-lab");
   check("Code Lab (analisador anterior) preservado", await hasText(page, "Análise") || (await hasText(page, "código")));
+
+  /* ---------------- LAB-003: Orquestração ---------------- */
+  await irPara(page, "Orquestração");
+  await sleep(350);
+  await shot(page, "19-orquestracao");
+  check("orquestração expõe o motor local", await hasText(page, "Motor de orquestração local"));
+  check("operações externas aparecem bloqueadas", await hasText(page, "Bloqueadas"));
+
+  const selecionouMissao = await selecionarPorOpcao(page, "MSN-0001");
+  check("seleciona uma missão para enfileirar", selecionouMissao);
+  await clickText(page, "Enfileirar");
+  await sleep(350);
+  check("enfileiramento confirma a execução", await hasText(page, "enfileirada"));
+  await clickText(page, "Processar fila");
+  await sleep(450);
+  await shot(page, "20-orquestracao-execucao");
+  check("fila processada gera execução", await hasText(page, "Execuções ("));
+
+  const clicouExecutarLocal = await page.evaluate(() => {
+    const el = [...document.querySelectorAll("button")].find(
+      (e) => e.textContent && e.textContent.includes("Executar localmente")
+    );
+    if (el) {
+      el.click();
+      return true;
+    }
+    return false;
+  });
+  await sleep(500);
+  if (clicouExecutarLocal) {
+    check("execução local real conclui a missão", await hasText(page, "Concluída"));
+  } else {
+    checagens.push({ nome: "botão de execução local disponível", ok: false });
+    falhas.push("botão Executar localmente ausente");
+    console.log("FAIL  botão Executar localmente ausente");
+  }
+
+  /* ---------------- LAB-003: Central de Evidências ---------------- */
+  await irPara(page, "Evidências");
+  await sleep(300);
+  await shot(page, "21-evidencias");
+  check("central distingue informada de verificada", await hasText(page, "Evidência informada"));
+  await page.type('input[placeholder^="URL, hash"]', "abc1234def5678");
+  await page.type('input[placeholder="O que esta evidência comprova"]', "Commit de referência da missão");
+  await clickText(page, "Registrar como informada");
+  await sleep(400);
+  await shot(page, "21b-evidencia-registrada");
+  check("evidência registrada aparece como informada", await hasText(page, "Informado pelo agente"));
+  check("contador de informadas atualiza", await hasText(page, "Informadas (1)"));
+
+  /* ---------------- LAB-003: Inteligência operacional ---------------- */
+  await irPara(page, "Inteligência");
+  await sleep(300);
+  await shot(page, "22-inteligencia");
+  check("inteligência calcula com dados observados", await hasText(page, "Desempenho calculado apenas com dados observados"));
+  check("recomendação usa dados reais", await hasText(page, "Recomendação por dados reais"));
+  check("métricas por agente presentes", await hasText(page, "Métricas por agente"));
+
+  /* ---------------- LAB-003: Adaptadores de agentes ---------------- */
+  await irPara(page, "Adaptadores");
+  await sleep(300);
+  await shot(page, "23-adaptadores");
+  check("adaptadores avisam ausência de integração autorizada", await hasText(page, "Nenhuma integração externa está autorizada"));
+  // O envio automático exige uma missão selecionada; sem isso a UI responderia
+  // apenas "Selecione uma missão primeiro". Selecionamos uma missão real antes.
+  check("seleciona uma missão antes de tentar o envio automático", await selecionarPorOpcao(page, "MSN-0001"));
+  await sleep(250);
+  const recusaEnvio = await page.evaluate(() => {
+    const el = [...document.querySelectorAll("button")].find(
+      (e) => e.textContent && e.textContent.includes("Tentar envio automático")
+    );
+    if (el) {
+      el.click();
+      return true;
+    }
+    return false;
+  });
+  await sleep(350);
+  check(
+    "envio automático é recusado e cai no fluxo manual",
+    recusaEnvio && ((await hasText(page, "recusado")) || (await hasText(page, "manual_assistido")))
+  );
+  check("fluxo manual de exportação disponível", await hasText(page, "exportar missão"));
+  check("fluxo manual de importação disponível", await hasText(page, "importar resultado"));
+
+  /* ---------------- LAB-003: Governança e auditoria ---------------- */
+  await irPara(page, "Governança");
+  await sleep(300);
+  await shot(page, "24-governanca");
+  check("governança exibe isolamento e auditoria", await hasText(page, "isolamento entre organizações"));
+  check("migrações aparecem como não aplicadas", await hasText(page, "não aplicada"));
+  check("bloqueio de migrações explícito", await hasText(page, "bloqueada"));
+  // Registra um consumo informado e valida a trilha de auditoria.
+  await page.type('input[placeholder="ex.: chatgpt"]', "trae");
+  await page.type('input[placeholder="0"]', "1200");
+  await clickText(page, "Registrar consumo informado");
+  await sleep(350);
+  await shot(page, "24b-governanca-auditoria");
+  check("consumo informado é registrado", await hasText(page, "1200 un."));
+  check("auditoria registra a operação", await hasText(page, "registrou consumo"));
 
   /* ---------------- Menu recolhido ---------------- */
   await irPara(page, "Painel");
