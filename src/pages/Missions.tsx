@@ -170,6 +170,7 @@ export function Missions() {
 
   return (
     <div className="space-y-5">
+      <section className="fire-mission-summary grid grid-cols-2 gap-3 lg:grid-cols-5" aria-label="Filtrar missões por situação">{(Object.keys(MISSION_STATUS_LABEL) as MissionStatus[]).map(status => <button key={status} type="button" aria-pressed={filtroStatus===status} onClick={()=>setFiltroStatus(filtroStatus===status?"todos":status)} className="glass fire-mission-tile p-3 text-left"><span className="block text-xs text-slate-300">{MISSION_STATUS_LABEL[status]}</span><strong className="mt-1 block text-2xl text-slate-50">{state.missoes.filter(m=>m.status===status).length}</strong></button>)}</section>
       <div className="glass flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
