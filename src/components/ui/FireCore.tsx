@@ -1,7 +1,7 @@
 import { FireGlobe } from "./FireGlobe";
 import { useState } from "react";
 import { AGENT_CONEXAO_LABEL, AGENT_STATUS_LABEL } from "../../types";
-import { Flame, Bot, Network } from "lucide-react";
+import { Bot, Network } from "lucide-react";
 import { useStore } from "../../store/StoreContext";
 
 export function FireCore() {
@@ -18,7 +18,7 @@ export function FireCore() {
         <circle className="fire-orbit-ring" cx="300" cy="170" r="138" fill="none" stroke="#fb923c" strokeWidth="2" strokeDasharray="38 12 3 12"/>
         {agents.map((a,i)=>{const t=i*Math.PI/3-Math.PI/2;return <path key={a.id} d={`M300 170 L${300+225*Math.cos(t)} ${170+132*Math.sin(t)}`} stroke="#64748b" strokeDasharray="4 7" fill="none"/>;})}
       </svg>
-      <div className="fire-core-center"><Flame size={48} aria-hidden/><span>FIRE</span></div>
+      <div className="fire-core-center"><img src="/brand/fire-phoenix-symbol.webp" alt="" className="fire-core-phoenix"/><span>FIRE</span></div>
       {agents.map((a,i)=>{const t=i*Math.PI/3-Math.PI/2;return <button type="button" aria-pressed={selectedId === a.id} onClick={() => setSelectedId(selectedId === a.id ? null : a.id)} key={a.id} className="fire-agent-node" style={{left:`${50+37.5*Math.cos(t)}%`,top:`${50+38.8*Math.sin(t)}%`}}><Bot size={18} aria-hidden/><span>{a.nome}</span></button>;})}
     </div>
     {selected && <div className="fire-agent-detail"><strong>{selected.nome}</strong><span>{selected.papel} · {AGENT_STATUS_LABEL[selected.status]}</span><span>{AGENT_CONEXAO_LABEL[selected.conexao]} · {selected.origem === "demonstrativo" ? "Demonstração" : "Cadastro local"}</span></div>}

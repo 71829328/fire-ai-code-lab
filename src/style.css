@@ -161,3 +161,56 @@ body { background-color:#03070f; background-image:radial-gradient(ellipse at 48%
 
 /* Premium system across operational screens */
 .fire-stat{position:relative;overflow:hidden;min-height:100px;border-color:var(--accent,#fb923c) !important;box-shadow:inset 0 0 24px color-mix(in srgb,var(--accent) 8%,transparent),0 8px 24px #0005}.fire-stat:after{content:"";position:absolute;bottom:0;left:12%;right:12%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}.fire-stat-fire{--accent:#f97316}.fire-stat-cyan{--accent:#22d3ee}.fire-stat-violet{--accent:#a78bfa}.fire-stat-emerald{--accent:#34d399}.fire-agent-card{border-color:#38bdf855;background:radial-gradient(ellipse at 15% 0%,#164e6344,transparent 55%),linear-gradient(145deg,#111c2c,#070c16)}.fire-agent-avatar{color:#67e8f9;background:radial-gradient(circle,#155e75,#07131f 70%);border:1px solid #22d3ee88;box-shadow:inset 0 0 18px #22d3ee33,0 0 18px #22d3ee22}.fire-agent-card:nth-child(3n+2) .fire-agent-avatar{color:#fdba74;border-color:#f9731688;background:radial-gradient(circle,#7c2d12,#140d0a 70%)}.fire-agent-card:nth-child(3n+3) .fire-agent-avatar{color:#c4b5fd;border-color:#a78bfa88;background:radial-gradient(circle,#4c1d95,#100b20 70%)}.fire-mission-tile{border-top:2px solid #22d3ee}.fire-mission-tile:nth-child(2){border-top-color:#f97316}.fire-mission-tile:nth-child(3){border-top-color:#a78bfa}.fire-mission-tile:nth-child(4){border-top-color:#34d399}.fire-mission-tile:nth-child(5){border-top-color:#fb7185}.fire-mission-tile[aria-pressed=true]{outline:2px solid #fb923c;outline-offset:2px}.fire-flow-track{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.fire-flow-node{flex:1 1 120px;display:grid;gap:4px;padding:12px;border:1px solid #22d3ee66;border-radius:10px;background:#0b1929;color:#e2e8f0;font-size:13px}.fire-flow-node span{color:#fb923c;font-size:11px;font-weight:700}.fire-flow{border-color:#a78bfa66}.fire-core-stage{max-width:560px}.fire-shell main{padding-top:16px}.fire-roster-item{padding:9px 12px}.fire-sidebar nav{gap:0}.fire-sidebar nav button{padding-top:8px;padding-bottom:8px}@media(min-width:1280px){.fire-command-grid{grid-template-columns:minmax(0,1.7fr) minmax(230px,1fr)}}
+
+/* Phoenix editorial surfaces: continuous workspace, restrained accents. */
+:root{--phoenix-orange:#ff6b2c;--phoenix-blue:#0ea5e9;--phoenix-cyan:#06b6d4;--phoenix-ink:#030608;--phoenix-surface:#08111d;--phoenix-line:#93bedb26}
+body{background:#050a10;background-image:radial-gradient(ellipse at 75% 0%,#10243866,transparent 65%);color:#e4edf5}
+.fire-sidebar{background:#080e16;border-right:1px solid #93bedb20;box-shadow:none}
+.fire-header{background:#080e16f5;border-bottom-color:#93bedb20}
+.fire-brand-mark{background:transparent;border:0;box-shadow:none!important}
+.fire-phoenix-symbol{width:100%;height:100%;object-fit:contain}
+.fire-phoenix-wordmark{width:150px;max-width:100%;height:auto;object-fit:contain}
+.fire-brand-caption{font-size:9px;letter-spacing:.1em;color:#8fa5b7;margin-top:3px}
+.fire-nav-active{box-shadow:inset 2px 0 #ff6b2c;background:#ff6b2c0c!important}
+.glass{background:#0a131d80;border:1px solid #93bedb20;border-radius:8px;box-shadow:none;backdrop-filter:none}
+.glass-soft{background:#0d192333;border-color:#93bedb15;border-radius:6px;backdrop-filter:none}
+.glass-hover:hover{box-shadow:none;border-color:#93bedb55;background:#0d1923}
+.fire-stat{border:0!important;border-radius:0;background:transparent;box-shadow:none!important;min-height:88px;border-bottom:1px solid #93bedb26!important}
+.fire-stat:after{display:none}
+.fire-stat>div:first-child{box-shadow:none;background:transparent;border:0}
+.fire-command-grid{gap:0;border-top:1px solid #93bedb26;border-bottom:1px solid #93bedb26}
+.fire-core,.fire-roster{border:0;border-radius:0;box-shadow:none;background:transparent}
+.fire-core{background:radial-gradient(ellipse at 50% 55%,#0b304633,transparent 70%)}
+.fire-roster-item{border:0;border-bottom:1px solid #93bedb20;border-radius:0;background:transparent}
+.fire-core-phoenix{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 0 12px #ff6b2c55)}
+.fire-agent-node{border:1px solid #93bedb40;background:#0a1520e8;border-radius:6px;box-shadow:none}
+.fire-agent-node:hover,.fire-agent-node[aria-pressed=true]{box-shadow:none}
+.fire-agent-card{background:#0a131d66;border:0;border-bottom:1px solid #93bedb26;border-radius:0}
+.fire-agent-avatar{box-shadow:none;border-radius:8px}
+.fire-mission-tile{border:0;border-bottom:2px solid #93bedb26;background:transparent;border-radius:0}
+.fire-flow{border:0;border-bottom:1px solid #93bedb26;background:transparent}
+.fire-flow-node{border:0;border-left:2px solid #0ea5e966;border-radius:0;background:#0b192955}
+.btn-primary{box-shadow:none;border-radius:6px}
+.btn-ghost,.btn-danger,.field{border-radius:6px}
+@media(min-width:1280px){.fire-roster{border-left:1px solid #93bedb26}}
+@media(max-width:480px){.fire-core-phoenix{width:44px;height:44px}}
+/* Shared application surfaces: tables, forms, dialogs, lists and navigation. */
+.fire-shell main .glass:not(.fire-core):not(.fire-roster){border:0;border-top:1px solid #93bedb26;background:#08111d44;border-radius:0;box-shadow:none}
+.fire-shell main .glass-soft{border:0;border-bottom:1px solid #93bedb20;border-radius:0;background:#08111d33}
+.fire-shell main table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.fire-shell main th{color:#9db4c7;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:#0b1621;border-bottom:1px solid #93bedb33}
+.fire-shell main td{border-bottom:1px solid #93bedb18}
+.fire-shell main tbody tr:hover{background:#0ea5e909}
+.fire-shell main h1,.fire-shell main h2,.fire-shell main h3{letter-spacing:-.025em}
+.fire-shell main .field{background:#070e16;border:1px solid #93bedb33;border-radius:4px;min-height:38px}
+.fire-shell main .field:focus{border-color:#0ea5e9;box-shadow:0 0 0 2px #0ea5e922}
+.fire-shell main .label{letter-spacing:.035em;text-transform:none;color:#b5c7d6}
+.fire-shell main .btn-primary{background:#ff6b2c;color:#080e16;box-shadow:none}
+.fire-shell main .btn-ghost{background:transparent;border-color:#93bedb33}
+.fire-shell main .chip{border-radius:4px;font-weight:500}
+.fire-shell main .fire-agent-card{border-bottom:1px solid #93bedb26}
+.fire-shell main .fire-stat{border-top:0!important}
+.fire-shell main .fire-mission-tile{border-top:0!important}
+.fire-phoenix-wordmark{width:185px}
+.fire-shell main .fire-agent-node{border-radius:4px}
+[role="dialog"] .glass{background:#08111d;border:1px solid #93bedb40;border-radius:8px;box-shadow:0 20px 80px #0009}

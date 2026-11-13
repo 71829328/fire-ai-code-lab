@@ -18,7 +18,7 @@ import {
   Plug,
   PlugZap,
   RotateCcw,
-  Flame,
+
   Target,
   Workflow,
   X,
@@ -248,15 +248,15 @@ function Sidebar({
       ].join(" ")}
     >
       <div className="flex items-center gap-3 px-4 py-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl fire-brand-mark shadow-glow">
-          <Flame className="h-6 w-6 text-orange-200" />
+        <div className={collapsed ? "flex h-10 w-10 shrink-0 items-center justify-center fire-brand-mark" : "hidden"}>
+          <img src="/brand/fire-phoenix-symbol.webp" alt="" className="fire-phoenix-symbol" />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold tracking-wide text-slate-50">
+            <p className="sr-only">
               FIRE INTELLIGENCE
             </p>
-            <p className="truncate text-[11px] text-slate-400">AGENT COMMAND CENTER</p>
+            <img src="/brand/fire-phoenix-horizontal.png" alt="FIRE Intelligence" className="fire-phoenix-wordmark" /><p className="fire-brand-caption">AGENT COMMAND CENTER</p>
           </div>
         )}
         <button
