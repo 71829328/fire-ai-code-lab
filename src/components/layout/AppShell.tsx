@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BadgeCheck,
   Bot,
@@ -115,6 +115,7 @@ export function AppShell({ page, onNavigate, title, subtitle, children }: AppShe
   const [confirmarReset, setConfirmarReset] = useState(false);
   const { state, dispatch } = useStore();
   const stats = computeStats(state);
+  useEffect(() => { window.scrollTo(0, 0); }, [page]);
 
   const handleNavigate = (key: PageKey) => {
     onNavigate(key);

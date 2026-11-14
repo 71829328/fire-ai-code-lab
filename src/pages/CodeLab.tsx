@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useState } from "react";
 import { AlertTriangle, Code2, FileCode2, Sparkles } from "lucide-react";
 import { analyzeCode, type Analysis, type Severity } from "../analyzer";
@@ -41,6 +42,7 @@ export function CodeLab() {
 
   return (
     <div className="fire-page fire-page--codelab space-y-5">
+      <PageIdentity page="codelab" />
       <div className="glass flex flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-100">

@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useState } from "react";
 import { CheckCircle2, Clock, Cpu, Hash, Play, Terminal, XCircle } from "lucide-react";
 import { useStore } from "../store/StoreContext";
@@ -47,6 +48,7 @@ export function LocalExecutor() {
 
   return (
     <div className="fire-page fire-page--executor space-y-5">
+      <PageIdentity page="executor" />
       <div className="glass flex items-start gap-3 border-cyan-400/30 bg-cyan-400/[0.06] p-4">
         <Terminal className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
         <div>

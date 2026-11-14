@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useMemo, useState } from "react";
 import { Brain, Cpu, Shield, Sparkles, Workflow, Bot, Filter, Pencil, Plus, Search, ShieldAlert, Trash2 } from "lucide-react";
 import { useStore } from "../store/StoreContext";
@@ -129,6 +130,7 @@ export function Agents() {
 
   return (
     <div className="fire-page fire-page--agentes space-y-5">
+      <PageIdentity page="agentes" />
       <section
         className="fire-metrics grid grid-cols-2 sm:grid-cols-4"
         aria-label="Indicadores de agentes"
@@ -225,16 +227,29 @@ export function Agents() {
             </thead>
             <tbody>
               {agentesFiltrados.map((agente) => {
-                const Avatar = [Brain, Cpu, Shield, Sparkles, Workflow][
-                  Array.from(agente.nome).reduce((n, c) => n + c.charCodeAt(0), 0) % 5
-                ];
+                const agentSigils: Record<string, typeof Brain> = {
+                  Aurora: Sparkles,
+                  Vulcano: Cpu,
+                  Nebula: Brain,
+                  Prisma: Shield,
+                  Orion: Workflow,
+                };
+                const agentTones: Record<string, string> = {
+                  Aurora: "aurora",
+                  Vulcano: "vulcano",
+                  Nebula: "nebula",
+                  Prisma: "prisma",
+                  Orion: "orion",
+                };
+                const Avatar = agentSigils[agente.nome] ?? Bot;
+                const tone = agentTones[agente.nome] ?? "aurora";
                 const tarefas = state.tarefas.filter((t) => t.agenteId === agente.id);
                 const concluidas = tarefas.filter((t) => t.status === "concluida").length;
                 return (
                   <tr key={agente.id}>
                     <td className="min-w-[200px]">
                       <div className="flex items-center gap-3">
-                        <div className="fire-agent-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                        <div className={"fire-agent-avatar fire-agent-avatar--" + tone + " flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"}>
                           <Avatar className="h-5 w-5" aria-hidden />
                         </div>
                         <div className="min-w-0">

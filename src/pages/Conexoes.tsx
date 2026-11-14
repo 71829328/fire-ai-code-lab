@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -206,6 +207,7 @@ export function Conexoes() {
 
   return (
     <div className="fire-page fire-page--conexoes space-y-5">
+      <PageIdentity page="conexoes" />
       <div className="glass flex items-start gap-3 border-sky-400/30 bg-sky-400/[0.06] p-4">
         <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-200" />
         <div>

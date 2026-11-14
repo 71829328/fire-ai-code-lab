@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useState } from "react";
 import {
   Ban,
@@ -226,6 +227,7 @@ export function Approvals() {
 
   return (
     <div className="fire-page fire-page--aprovacoes space-y-5">
+      <PageIdentity page="aprovacoes" />
       <div className="glass flex flex-wrap items-center justify-between gap-2 p-4">
         <p className="text-sm text-slate-300">
           <span className="font-semibold text-slate-100">{pendentes.length}</span> missão(ões)

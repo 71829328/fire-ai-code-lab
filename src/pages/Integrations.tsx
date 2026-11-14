@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { AlertTriangle, CheckCircle2, Plug, ShieldCheck, XCircle, Zap } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { IntegrationStateBadge } from "../components/ui/badges";
@@ -21,6 +22,7 @@ export function Integrations() {
 
   return (
     <div className="fire-page fire-page--integracoes space-y-5">
+      <PageIdentity page="integracoes" />
       <div className="glass flex items-start gap-3 border-amber-400/30 bg-amber-400/[0.06] p-4">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-200" />
         <div>

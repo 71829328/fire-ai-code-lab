@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useMemo, useState } from "react";
 import {
   CheckCircle2,
@@ -179,6 +180,7 @@ export function Missions() {
 
   return (
     <div className="fire-page fire-page--missoes space-y-5">
+      <PageIdentity page="missoes" />
       <section
         className="fire-queue grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
         aria-label="Fila de missões por situação"

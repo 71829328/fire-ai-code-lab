@@ -1,3 +1,4 @@
+import { PageIdentity } from "../components/ui/PageIdentity";
 import { useMemo, useState } from "react";
 import {
   Ban,
@@ -98,7 +99,8 @@ export function Orchestration() {
   };
 
   return (
-    <div className="fire-page fire-page--orquestracao space-y-5"><section className="glass fire-flow p-4" aria-label="Fluxo operacional ilustrativo"><p className="fire-eyebrow">PIPELINE / EXECUÇÃO LOCAL</p><div className="fire-flow-track">{["Missão","Fila","Aprovação quando exigida","Executor local","Evidências"].map((step,i)=><div key={step} className="fire-flow-node"><span>{String(i+1).padStart(2,"0")}</span>{step}</div>)}</div><p className="text-xs text-slate-400">Fluxo conceitual; consulte a fila abaixo para o estado real.</p></section>
+    <div className="fire-page fire-page--orquestracao space-y-5">
+      <PageIdentity page="orquestracao" /><section className="glass fire-flow p-4" aria-label="Fluxo operacional ilustrativo"><p className="fire-eyebrow">PIPELINE / EXECUÇÃO LOCAL</p><div className="fire-flow-track">{["Missão","Fila","Aprovação quando exigida","Executor local","Evidências"].map((step,i)=><div key={step} className="fire-flow-node"><span>{String(i+1).padStart(2,"0")}</span>{step}</div>)}</div><p className="text-xs text-slate-400">Fluxo conceitual; consulte a fila abaixo para o estado real.</p></section>
       <div className="glass flex items-start gap-3 border-cyan-400/30 bg-cyan-400/[0.06] p-4">
         <Cpu className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
         <div>
