@@ -17,7 +17,12 @@ import { fetchPadrao, lerJson, mensagemErroHttp, type FetchLike } from "../rede"
 
 export const GITHUB_API = "https://api.github.com";
 
-export type EstadoGitHub = "nao_configurado" | "configurado_nao_verificado" | "conectado_verificado" | "erro";
+export type EstadoGitHub =
+  | "nao_configurado"
+  | "configurado_nao_verificado"
+  | "conectado_verificado"
+  | "leitura_publica_verificada"
+  | "erro";
 
 export interface ResultadoGitHub<T> {
   ok: boolean;
@@ -77,6 +82,8 @@ export interface ConfiguracaoGitHub {
   token: string | null;
   /** Repositório autorizado, no formato "owner/repo". */
   repositorioAutorizado: string;
+  /** Permite leitura somente de dados públicos do único repositório autorizado. */
+  permitirLeituraPublica?: boolean;
 }
 
 export class AdaptadorGitHub {
@@ -94,12 +101,13 @@ export class AdaptadorGitHub {
   }
 
   private headers(): Record<string, string> {
-    return {
+    const headers: Record<string, string> = {
       accept: "application/vnd.github+json",
       "x-github-api-version": "2022-11-28",
-      authorization: `Bearer ${this.config.token ?? ""}`,
       "user-agent": "fire-agent-command-center",
     };
+    if (this.config.token) headers.authorization = `Bearer ${this.config.token}`;
+    return headers;
   }
 
   /** Recusa qualquer repositório fora do escopo autorizado. */
@@ -108,26 +116,37 @@ export class AdaptadorGitHub {
   }
 
   private async buscar<T>(caminho: string, padrao: (dados: unknown) => T | null): Promise<ResultadoGitHub<T>> {
-    if (!this.config.token) {
+    const leituraPublica = this.config.token === null;
+    if (leituraPublica && !this.config.permitirLeituraPublica) {
       return {
         ok: false,
         estado: "nao_configurado",
         dados: null,
-        mensagem: "GitHub não configurado: token da aplicação ausente. Nenhuma chamada foi feita.",
+        mensagem: "Leitura pública do GitHub desativada. Nenhuma chamada foi feita.",
       };
     }
     try {
       const resposta = await this.fetchImpl(`${GITHUB_API}${caminho}`, { headers: this.headers() });
       const dados = await lerJson(resposta);
       if (!resposta.ok) {
-        if (resposta.status === 401 || resposta.status === 403) this.estado = "erro";
-        return { ok: false, estado: this.estado, dados: null, mensagem: mensagemErroHttp(dados, resposta.status) };
+        if (!leituraPublica && (resposta.status === 401 || resposta.status === 403)) this.estado = "erro";
+        const estado = leituraPublica ? "nao_configurado" : this.estado;
+        const mensagem = leituraPublica
+          ? "Não foi possível ler o repositório publicamente; acesso privado exige token autorizado."
+          : mensagemErroHttp(dados, resposta.status);
+        return { ok: false, estado, dados: null, mensagem };
       }
       const convertido = padrao(dados);
       if (convertido === null) {
         return { ok: false, estado: this.estado, dados: null, mensagem: "Resposta inesperada da API do GitHub." };
       }
-      return { ok: true, estado: this.estado, dados: convertido, mensagem: "OK" };
+      this.estado = leituraPublica ? "leitura_publica_verificada" : "conectado_verificado";
+      return {
+        ok: true,
+        estado: this.estado,
+        dados: convertido,
+        mensagem: leituraPublica ? "Leitura pública somente de leitura confirmada." : "OK",
+      };
     } catch (erro) {
       this.estado = "erro";
       const mensagem = erro instanceof Error ? erro.message : "falha de rede";
@@ -155,7 +174,6 @@ export class AdaptadorGitHub {
         url: String(r.html_url ?? ""),
       };
     });
-    if (resultado.ok) this.estado = "conectado_verificado";
     return resultado;
   }
 

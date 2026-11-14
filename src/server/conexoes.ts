@@ -18,6 +18,7 @@ export type EstadoConexao =
   | "configurado"
   | "autorizado"
   | "conectado_verificado"
+  | "leitura_publica_verificada"
   | "indisponivel"
   | "erro"
   | "bloqueado_por_custo";
@@ -27,6 +28,7 @@ export const ESTADO_CONEXAO_LABEL: Record<EstadoConexao, string> = {
   configurado: "Configurado",
   autorizado: "Autorizado",
   conectado_verificado: "Conectado e verificado",
+  leitura_publica_verificada: "Leitura pública verificada",
   indisponivel: "Indisponível",
   erro: "Erro",
   bloqueado_por_custo: "Bloqueado por custo",
@@ -94,6 +96,8 @@ function deExterno(estado: EstadoGitHub | EstadoVercel, configurado: boolean): E
   switch (estado) {
     case "conectado_verificado":
       return "conectado_verificado";
+    case "leitura_publica_verificada":
+      return "leitura_publica_verificada";
     case "erro":
       return "erro";
     case "configurado_nao_verificado":
@@ -135,17 +139,31 @@ export function montarCentralConexoes(entrada: EntradaConexoes): EstadoConexoes 
       nome: "GitHub (repositório autorizado)",
       categoria: "repositorio",
       estado: deExterno(entrada.estadoGitHub, githubConfigurado),
-      permissoes: githubConfigurado ? ["leitura de repositório", "leitura de ações/CI"] : [],
+      permissoes: githubConfigurado
+        ? ["leitura autenticada no repositório autorizado", "leitura de ações/CI conforme permissões do token"]
+        : entrada.estadoGitHub === "leitura_publica_verificada"
+          ? ["somente leitura de conteúdo público do repositório autorizado"]
+          : [],
       requerimentos: [
-        "Token da aplicação com escopo de leitura no repositório autorizado",
+        githubConfigurado
+          ? "Token da aplicação com escopo mínimo de leitura no repositório autorizado"
+          : config.github.permitirLeituraPublica
+            ? "FIRE_GITHUB_PUBLIC_READ=true; limita chamadas públicas ao repositório autorizado"
+            : "Token de leitura para dados privados e operações autenticadas",
         "Repositório " + config.github.repositorioAutorizado + " autorizado pelo proprietário",
       ],
-      observacao: githubConfigurado
-        ? "Token presente. Só é 'conectado e verificado' após uma chamada real bem-sucedida."
-        : "Token ausente: nenhuma chamada é feita. Escopo permitido apenas quando configurado.",
-      ultimaComunicacao: entrada.estadoGitHub === "conectado_verificado" ? new Date().toISOString() : null,
+      observacao: entrada.estadoGitHub === "leitura_publica_verificada"
+        ? "Leitura pública verificada sem autenticação. Isso não comprova identidade da aplicação nem concede acesso a dados privados."
+        : githubConfigurado
+          ? "Token presente. Só é 'conectado e verificado' após uma chamada autenticada real bem-sucedida."
+          : config.github.permitirLeituraPublica
+            ? "Leitura pública somente de leitura habilitada; o estado só muda após chamada real bem-sucedida."
+            : "Token ausente e leitura pública desativada: nenhuma chamada é feita.",
+      ultimaComunicacao: entrada.estadoGitHub === "conectado_verificado" || entrada.estadoGitHub === "leitura_publica_verificada"
+        ? new Date().toISOString()
+        : null,
       falhas: entrada.falhasGitHub ?? [],
-      limites: "Limite de taxa da API pública do GitHub (por token).",
+      limites: "Limite da API REST do GitHub: cota anônima por origem; token autorizado eleva a cota e libera recursos privados.",
       consumo: "Chamadas de leitura contabilizadas pelo GitHub.",
       adaptadorImplementado: true,
     },

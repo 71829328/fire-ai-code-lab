@@ -14,7 +14,7 @@ export interface ConfiguracaoServidor {
   ambiente: "desenvolvimento" | "teste" | "producao";
   sessao: { segredo: string | null };
   supabase: { url: string | null; anonKey: string | null; serviceRoleKey: string | null };
-  github: { token: string | null; repositorioAutorizado: string };
+  github: { token: string | null; repositorioAutorizado: string; permitirLeituraPublica: boolean };
   vercel: { token: string | null; projetoAutorizado: string; teamId: string | null };
   oauth: { googleClientId: string | null; microsoftClientId: string | null };
 }
@@ -47,6 +47,7 @@ export function lerConfig(env: Record<string, string | undefined> = process.env)
     github: {
       token: limpar(env.GITHUB_TOKEN),
       repositorioAutorizado: limpar(env.FIRE_GITHUB_REPO) ?? REPOSITORIO_AUTORIZADO_PADRAO,
+      permitirLeituraPublica: env.FIRE_GITHUB_PUBLIC_READ === "true",
     },
     vercel: {
       token: limpar(env.VERCEL_TOKEN),

@@ -54,10 +54,25 @@ describe("Adaptador GitHub (somente leitura, escopo restrito)", () => {
     const r = await gh.verificarRepositorio();
     expect(gh.estadoAtual()).toBe("nao_configurado");
     expect(r.ok).toBe(false);
-    expect(r.mensagem).toMatch(/não configurado/i);
+    expect(r.mensagem).toMatch(/leitura pública.*desativada/i);
     expect(chamadas).toHaveLength(0);
   });
 
+  it("permite leitura pública somente do repositório autorizado e sem token", async () => {
+    const { fn, chamadas } = fakeFetch([
+      { ok: true, status: 200, body: { full_name: REPO, private: false, default_branch: "main", language: "TypeScript", html_url: `https://github.com/${REPO}` } },
+    ]);
+    const gh = new AdaptadorGitHub({ token: null, repositorioAutorizado: REPO, permitirLeituraPublica: true }, fn);
+    const r = await gh.verificarRepositorio();
+    expect(r.ok).toBe(true);
+    expect(r.estado).toBe("leitura_publica_verificada");
+    expect(r.dados?.privado).toBe(false);
+    expect(chamadas).toHaveLength(1);
+    expect(chamadas[0].url).toBe(`https://api.github.com/repos/${REPO}`);
+    expect(chamadas[0].init?.headers?.authorization).toBeUndefined();
+    expect(await gh.verificarRepositorio("outro-usuario/outro-repo")).toMatchObject({ ok: false });
+    expect(chamadas).toHaveLength(1);
+  });
   it("recusa repositório fora do escopo ANTES de qualquer chamada", async () => {
     const { fn, chamadas } = fakeFetch([{ ok: true, status: 200, body: {} }]);
     const gh = new AdaptadorGitHub({ token: "tok-abc", repositorioAutorizado: REPO }, fn);

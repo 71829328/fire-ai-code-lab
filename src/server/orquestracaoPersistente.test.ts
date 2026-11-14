@@ -114,7 +114,7 @@ describe("ciclo com recuperação", () => {
     const repo = repoCom([executando]);
     const leases = new GerenciadorLeases();
 
-    const ciclo = await processarComRecuperacao(contexto(repo), leases, DEFAULT_ENGINE_CONFIG);
+    const ciclo = await processarComRecuperacao(contexto(repo), leases, ORG, DEFAULT_ENGINE_CONFIG);
     expect(ciclo.recuperados).toContain("run-orfao");
 
     const depois = await repo.buscarRun(ORG, "run-orfao");
@@ -130,7 +130,7 @@ describe("ciclo com recuperação", () => {
     const leases = new GerenciadorLeases();
     leases.adquirir("run-vivo");
 
-    const ciclo = await processarComRecuperacao(contexto(repo), leases, DEFAULT_ENGINE_CONFIG);
+    const ciclo = await processarComRecuperacao(contexto(repo), leases, ORG, DEFAULT_ENGINE_CONFIG);
     expect(ciclo.recuperados).toHaveLength(0);
     const depois = await repo.buscarRun(ORG, "run-vivo");
     expect(depois?.status).toBe("executando");
@@ -139,7 +139,7 @@ describe("ciclo com recuperação", () => {
   it("inicia execução pronta e registra lease", async () => {
     const repo = repoCom([criarRun({ organizacaoId: ORG, missao, agora: AGORA, id: "run-novo" })]);
     const leases = new GerenciadorLeases();
-    const ciclo = await processarComRecuperacao(contexto(repo), leases, DEFAULT_ENGINE_CONFIG);
+    const ciclo = await processarComRecuperacao(contexto(repo), leases, ORG, DEFAULT_ENGINE_CONFIG);
     expect(ciclo.iniciados).toContain("run-novo");
     expect(leases.ativo("run-novo")).toBe(true);
   });

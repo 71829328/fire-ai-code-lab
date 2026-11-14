@@ -345,37 +345,41 @@ export interface ResultadoProcessamento {
 
 // Executa UM ciclo do motor no servidor. As missões vêm do repositório (nunca
 // do cliente) e as aprovações concedidas são relidas do banco.
-export async function processarFila(ctx: Contexto, config: EngineConfig = DEFAULT_ENGINE_CONFIG): Promise<ResultadoProcessamento> {
-  // Processa cada organização isoladamente — nunca mistura tenants.
-  const organizacoes = await ctx.repo.listarOrganizacoes();
+export async function processarFila(
+  ctx: Contexto,
+  organizacaoId: string,
+  config: EngineConfig = DEFAULT_ENGINE_CONFIG
+): Promise<ResultadoProcessamento> {
+  // O escopo vem da sessão verificada pelo servidor, nunca do corpo da requisição.
+  const organizacao = await ctx.repo.buscarOrganizacao(organizacaoId);
+  if (!organizacao) throw new ApiError("nao_encontrado", "Organização autenticada não encontrada.");
+
   const acumulado: ResultadoProcessamento = { runs: [], iniciados: [], concluidos: [], expirados: [], mensagens: [] };
+  const runs = await ctx.repo.listarRuns(organizacao.id);
+  if (runs.length === 0) return acumulado;
 
-  for (const organizacao of organizacoes) {
-    const runs = await ctx.repo.listarRuns(organizacao.id);
-    if (runs.length === 0) continue;
-    const missoes = await ctx.repo.listarMissoes(organizacao.id);
-    const aprovacoes = await ctx.repo.listarAprovacoes(organizacao.id);
-    const aprovadas = new Set(
-      aprovacoes.filter((a) => a.decisao === "aprovado" && a.runId).map((a) => a.runId as string)
-    );
+  const missoes = await ctx.repo.listarMissoes(organizacao.id);
+  const aprovacoes = await ctx.repo.listarAprovacoes(organizacao.id);
+  const aprovadas = new Set(
+    aprovacoes.filter((a) => a.decisao === "aprovado" && a.runId).map((a) => a.runId as string)
+  );
 
-    const params: ProcessarParams = {
-      runs,
-      missoes,
-      config,
-      agora: agora(ctx),
-      aprovadas,
-    };
-    const passo = processar(params);
-    for (const run of passo.runs) {
-      const anterior = runs.find((r) => r.id === run.id);
-      if (anterior?.status !== run.status) await ctx.repo.salvarRun(run);
-    }
-    acumulado.runs.push(...passo.runs);
-    acumulado.iniciados.push(...passo.iniciados);
-    acumulado.expirados.push(...passo.expirados);
-    acumulado.mensagens.push(...passo.mensagens);
+  const params: ProcessarParams = {
+    runs,
+    missoes,
+    config,
+    agora: agora(ctx),
+    aprovadas,
+  };
+  const passo = processar(params);
+  for (const run of passo.runs) {
+    const anterior = runs.find((r) => r.id === run.id);
+    if (anterior?.status !== run.status) await ctx.repo.salvarRun(run);
   }
+  acumulado.runs.push(...passo.runs);
+  acumulado.iniciados.push(...passo.iniciados);
+  acumulado.expirados.push(...passo.expirados);
+  acumulado.mensagens.push(...passo.mensagens);
   return acumulado;
 }
 

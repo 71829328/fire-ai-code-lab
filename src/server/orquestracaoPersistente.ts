@@ -20,6 +20,7 @@ import { randomUUID } from "node:crypto";
 import { falhar, processar } from "../orchestration/engine";
 import { DEFAULT_ENGINE_CONFIG, type EngineConfig, type MissionRun } from "../orchestration/types";
 import type { Contexto } from "./servico";
+import { ApiError } from "./http";
 
 export interface Lease {
   runId: string;
@@ -128,17 +129,19 @@ export interface ResultadoCiclo {
 export async function processarComRecuperacao(
   ctx: Contexto,
   leases: GerenciadorLeases,
+  organizacaoId: string,
   config: EngineConfig = DEFAULT_ENGINE_CONFIG
 ): Promise<ResultadoCiclo> {
   const agora = (ctx.agora ?? (() => new Date().toISOString()))();
   const agoraMs = Date.parse(agora);
   const resultado: ResultadoCiclo = { recuperados: [], iniciados: [], expirados: [], aguardandoBackoff: [], mensagens: [] };
 
-  const organizacoes = await ctx.repo.listarOrganizacoes();
-  for (const organizacao of organizacoes) {
-    const runs = await ctx.repo.listarRuns(organizacao.id);
-    if (runs.length === 0) continue;
+  // O tenant é derivado da sessão no roteador; este ciclo não enumera outras organizações.
+  const organizacao = await ctx.repo.buscarOrganizacao(organizacaoId);
+  if (!organizacao) throw new ApiError("nao_encontrado", "Organização autenticada não encontrada.");
+  const runs = await ctx.repo.listarRuns(organizacao.id);
 
+  if (runs.length > 0) {
     // 1. Recuperação: "executando" sem lease ativo = interrompida (restart/crash).
     const recuperadas: MissionRun[] = [];
     for (const run of runs) {
@@ -155,50 +158,36 @@ export async function processarComRecuperacao(
     // 2. Backoff.
     const elegiveis: MissionRun[] = [];
     for (const run of aposRecuperacao) {
-      if (deveAguardarBackoff(run, agoraMs, config)) {
-        resultado.aguardandoBackoff.push(run.id);
-      } else {
-        elegiveis.push(run);
-      }
+      if (deveAguardarBackoff(run, agoraMs, config)) resultado.aguardandoBackoff.push(run.id);
+      else elegiveis.push(run);
     }
 
-    // 3. Motor sobre o subconjunto elegível.
+    // 3. Motor sobre as execuções desta organização.
     const missoes = await ctx.repo.listarMissoes(organizacao.id);
     const aprovacoes = await ctx.repo.listarAprovacoes(organizacao.id);
     const aprovadas = new Set(aprovacoes.filter((a) => a.decisao === "aprovado" && a.runId).map((a) => a.runId as string));
     const passo = processar({ runs: elegiveis, missoes, config, agora, aprovadas });
 
-    // 4. Persistência + leases das execuções iniciadas.
+    // 4. Persistência + leases das execuções desta organização.
     for (const run of passo.runs) {
       const anterior = aposRecuperacao.find((r) => r.id === run.id);
       if (anterior?.status !== run.status) await ctx.repo.salvarRun(run);
     }
-    for (const id of passo.iniciados) {
-      leases.adquirir(id);
-    }
-    for (const id of passo.expirados) {
-      leases.liberar(id);
-    }
+    for (const id of passo.iniciados) leases.adquirir(id);
+    for (const id of passo.expirados) leases.liberar(id);
 
     resultado.iniciados.push(...passo.iniciados);
     resultado.expirados.push(...passo.expirados);
     resultado.mensagens.push(...passo.mensagens);
   }
 
-  // Higiene: libera leases de execuções que já terminaram.
+  // Só limpa leases de execuções que pertencem ao tenant verificado nesta chamada.
+  const idsDaOrganizacao = new Set(runs.map((run) => run.id));
   for (const lease of leases.ativos()) {
-    const run = await buscarRunGlobal(ctx, lease.runId);
+    if (!idsDaOrganizacao.has(lease.runId)) continue;
+    const run = await ctx.repo.buscarRun(organizacao.id, lease.runId);
     if (!run || (run.status !== "executando" && run.status !== "enfileirada")) leases.liberar(lease.runId);
   }
 
   return resultado;
-}
-
-async function buscarRunGlobal(ctx: Contexto, runId: string): Promise<MissionRun | null> {
-  const organizacoes = await ctx.repo.listarOrganizacoes();
-  for (const organizacao of organizacoes) {
-    const run = await ctx.repo.buscarRun(organizacao.id, runId);
-    if (run) return run;
-  }
-  return null;
 }

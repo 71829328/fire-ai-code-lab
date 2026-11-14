@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { lerConfig } from "./config";
 import type { ApiRequest, ApiResponse } from "./http";
 import { criarDependencias, handleRequest, type DependenciasServidor } from "./router";
@@ -131,6 +131,44 @@ describe("roteador server-side — integrações", () => {
     const provedores = (resp.body as { provedores: { estado: string }[] }).provedores;
     expect(provedores.some((p) => p.estado === "conectado_verificado")).toBe(false);
   });
+});
+
+describe("roteador server-side — isolamento de organização", () => {
+  it("lista apenas a organização vinculada à sessão", async () => {
+    const { deps, repo } = montar();
+    const token = await login(deps);
+    const usuario = await repo.buscarUsuarioPorEmail("operador@exemplo.invalid");
+    expect(usuario).not.toBeNull();
+
+    await repo.criarOrganizacao({
+      id: "org-restrita",
+      nome: "Organização restrita",
+      ambiente: "demonstracao",
+      criadoEm: new Date().toISOString(),
+    });
+
+    const resp = await handleRequest(req("GET", "/organizacoes", { token }), deps);
+    expect(resp.status).toBe(200);
+    const ids = (resp.body as { organizacoes: { id: string }[] }).organizacoes.map((org) => org.id);
+    expect(ids).toEqual([usuario!.organizacaoId]);
+    expect(ids).not.toContain("org-restrita");
+  });
+
+  it.each(["/execucoes/processar", "/execucoes/processar-simples"])(
+    "%s processa somente o tenant da sessão",
+    async (path) => {
+      const { deps, repo } = montar();
+      const token = await login(deps);
+      const listarTodas = vi.spyOn(repo, "listarOrganizacoes");
+      if (path === "/execucoes/processar") deps.leases.adquirir("run-de-outro-tenant");
+      const resp = await handleRequest(req("POST", path, { token }), deps);
+      expect(resp.status).toBe(200);
+      expect(listarTodas).not.toHaveBeenCalled();
+      if (path === "/execucoes/processar") {
+        expect((resp.body as { leasesAtivos: string[] }).leasesAtivos).not.toContain("run-de-outro-tenant");
+      }
+    }
+  );
 });
 
 describe("roteador server-side — rate limiting", () => {

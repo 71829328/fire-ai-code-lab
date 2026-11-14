@@ -329,6 +329,18 @@ export class RepositorioSupabase implements Repositorio {
     return new ClientePostgrest(this.config.url, this.config.serviceRoleKey, this.fetchImpl);
   }
 
+  private exigirSucesso(retorno: RetornoCliente, operacao: string): void {
+    if (!retorno.ok) throw new Error(`Supabase: operação ${operacao} falhou (HTTP ${retorno.status}).`);
+  }
+
+  private exigirUmaLinha(retorno: RetornoCliente, operacao: string): Record<string, unknown> {
+    this.exigirSucesso(retorno, operacao);
+    if (!Array.isArray(retorno.dados) || retorno.dados.length !== 1 || !retorno.dados[0] || typeof retorno.dados[0] !== "object") {
+      throw new Error(`Supabase: operação ${operacao} não confirmou exatamente um registro.`);
+    }
+    return retorno.dados[0] as Record<string, unknown>;
+  }
+
   estado(): EstadoConexaoSupabase {
     return this.estadoConexao;
   }
@@ -380,8 +392,7 @@ export class RepositorioSupabase implements Repositorio {
       nome: org.nome,
       ambiente: org.ambiente,
     });
-    const linha = Array.isArray(r.dados) ? (r.dados as Record<string, unknown>[])[0] : null;
-    return linha ? paraOrganizacao(linha) : org;
+    return paraOrganizacao(this.exigirUmaLinha(r, "criar organização"));
   }
 
   async listarUsuarios(organizacaoId: string): Promise<Usuario[]> {
@@ -413,8 +424,7 @@ export class RepositorioSupabase implements Repositorio {
       papel: usuario.papel,
       ativo: usuario.ativo,
     });
-    const linha = Array.isArray(r.dados) ? (r.dados as Record<string, unknown>[])[0] : null;
-    return linha ? paraUsuario(linha) : usuario;
+    return paraUsuario(this.exigirUmaLinha(r, "criar usuário"));
   }
 
   async listarMissoes(organizacaoId: string): Promise<MissaoServidor[]> {
@@ -441,8 +451,7 @@ export class RepositorioSupabase implements Repositorio {
       prioridade: missao.prioridade,
       criterios_aceite: missao.criteriosAceite,
     });
-    const linha = Array.isArray(r.dados) ? (r.dados as Record<string, unknown>[])[0] : null;
-    return linha ? paraMissao(linha) : missao;
+    return paraMissao(this.exigirUmaLinha(r, "criar missão"));
   }
 
   private async carregarFilhos(run: MissionRun): Promise<FilhosRun> {
@@ -474,7 +483,10 @@ export class RepositorioSupabase implements Repositorio {
   // Persiste a execução e APPENDA somente os filhos novos (run_attempts e
   // run_eventos são append-only). Nunca atualiza/remove eventos existentes.
   async salvarRun(run: MissionRun): Promise<void> {
-    await this.cliente().atualizar("mission_runs", { id: `eq.${run.id}` }, {
+    const atualizacao = await this.cliente().atualizar("mission_runs", {
+      organizacao_id: `eq.${run.organizacaoId}`,
+      id: `eq.${run.id}`,
+    }, {
       status: run.status,
       tentativa_atual: run.tentativaAtual,
       agente_id: run.agenteId,
@@ -484,6 +496,7 @@ export class RepositorioSupabase implements Repositorio {
       finalizado_em: run.finalizadoEm,
       resultado: run.resultado,
     });
+    this.exigirUmaLinha(atualizacao, "atualizar execução");
 
     const existentes = await this.carregarFilhos(run);
     const idsEventos = new Set(existentes.eventos.map((e) => e.id));
@@ -493,7 +506,7 @@ export class RepositorioSupabase implements Repositorio {
     const novosAttempts = run.tentativas.filter((t) => !idsAttempts.has(`${t.numero}`));
 
     if (novosAttempts.length > 0) {
-      await this.cliente().inserir(
+      const insercao = await this.cliente().inserir(
         "run_attempts",
         novosAttempts.map((t) => ({
           run_id: run.id,
@@ -504,12 +517,14 @@ export class RepositorioSupabase implements Repositorio {
           erro: t.erro,
         }))
       );
+      this.exigirSucesso(insercao, "registrar tentativas");
     }
     if (novosEventos.length > 0) {
-      await this.cliente().inserir(
+      const insercao = await this.cliente().inserir(
         "run_eventos",
         novosEventos.map((e) => ({ run_id: run.id, status: e.status, descricao: e.descricao, timestamp: e.timestamp }))
       );
+      this.exigirSucesso(insercao, "registrar eventos");
     }
   }
 
@@ -525,7 +540,7 @@ export class RepositorioSupabase implements Repositorio {
 
   async registrarAuditoria(entrada: AuditEntry): Promise<void> {
     // Somente inserção: audit_log é imutável (trigger no banco).
-    await this.cliente().inserir("audit_log", {
+    const insercao = await this.cliente().inserir("audit_log", {
       id: entrada.id,
       organizacao_id: entrada.organizacaoId,
       usuario_id: entrada.usuarioId,
@@ -535,6 +550,7 @@ export class RepositorioSupabase implements Repositorio {
       resultado: entrada.resultado,
       detalhe: entrada.detalhe ?? null,
     });
+    this.exigirUmaLinha(insercao, "registrar auditoria");
   }
 
   async listarEvidencias(organizacaoId: string): Promise<EvidenceRecord[]> {
@@ -558,16 +574,19 @@ export class RepositorioSupabase implements Repositorio {
       verificado_por: evidencia.verificadoPor,
       verificado_em: evidencia.verificadoEm,
     });
-    const linha = Array.isArray(r.dados) ? (r.dados as Record<string, unknown>[])[0] : null;
-    return linha ? paraEvidencia(linha) : evidencia;
+    return paraEvidencia(this.exigirUmaLinha(r, "registrar evidência"));
   }
 
   async atualizarEvidencia(evidencia: EvidenceRecord): Promise<void> {
-    await this.cliente().atualizar("evidencias", { id: `eq.${evidencia.id}` }, {
+    const atualizacao = await this.cliente().atualizar("evidencias", {
+      organizacao_id: `eq.${evidencia.organizacaoId}`,
+      id: `eq.${evidencia.id}`,
+    }, {
       origem_dado: evidencia.origemDado,
       verificado_por: evidencia.verificadoPor,
       verificado_em: evidencia.verificadoEm,
     });
+    this.exigirUmaLinha(atualizacao, "atualizar evidência");
   }
 
   async listarAprovacoes(organizacaoId: string): Promise<Aprovacao[]> {
@@ -587,17 +606,20 @@ export class RepositorioSupabase implements Repositorio {
       solicitado_por: aprovacao.solicitadoPor,
       justificativa: aprovacao.justificativa,
     });
-    const linha = Array.isArray(r.dados) ? (r.dados as Record<string, unknown>[])[0] : null;
-    return linha ? paraAprovacao(linha) : aprovacao;
+    return paraAprovacao(this.exigirUmaLinha(r, "registrar aprovação"));
   }
 
   async atualizarAprovacao(aprovacao: Aprovacao): Promise<void> {
-    await this.cliente().atualizar("aprovacoes", { id: `eq.${aprovacao.id}` }, {
+    const atualizacao = await this.cliente().atualizar("aprovacoes", {
+      organizacao_id: `eq.${aprovacao.organizacaoId}`,
+      id: `eq.${aprovacao.id}`,
+    }, {
       decisao: aprovacao.decisao,
       decidido_por: aprovacao.decididoPor,
       decidido_em: aprovacao.decididoEm,
       justificativa: aprovacao.justificativa,
     });
+    this.exigirUmaLinha(atualizacao, "atualizar aprovação");
   }
 
   async listarConsumo(organizacaoId: string): Promise<UsageMetric[]> {

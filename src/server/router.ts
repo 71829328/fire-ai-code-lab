@@ -93,7 +93,11 @@ export function criarDependencias(config: ConfiguracaoServidor = lerConfig(), op
     gateway: criarGatewayPadrao(),
     github:
       opcoes.github ??
-      new AdaptadorGitHub({ token: config.github.token, repositorioAutorizado: config.github.repositorioAutorizado }),
+      new AdaptadorGitHub({
+        token: config.github.token,
+        repositorioAutorizado: config.github.repositorioAutorizado,
+        permitirLeituraPublica: config.github.permitirLeituraPublica,
+      }),
     vercel:
       opcoes.vercel ??
       new AdaptadorVercel({
@@ -236,7 +240,8 @@ async function despachar(
 
   /* ---- Organizações / usuários ---- */
   if (metodo === "GET" && path === "/organizacoes") {
-    return json(200, { organizacoes: await deps.repo.listarOrganizacoes() });
+    const organizacao = await deps.repo.buscarOrganizacao(usuario.organizacaoId);
+    return json(200, { organizacoes: organizacao ? [organizacao] : [] });
   }
   if (metodo === "POST" && path === "/organizacoes") {
     const organizacao = await criarOrganizacao(ctx, usuario, validarCriarOrganizacao(req.body));
@@ -278,19 +283,24 @@ async function despachar(
   }
   if (metodo === "POST" && path === "/execucoes/processar") {
     exigirPermissao(usuario, "missao:executar", usuario.organizacaoId);
-    const ciclo = await processarComRecuperacao(ctx, deps.leases);
+    const ciclo = await processarComRecuperacao(ctx, deps.leases, usuario.organizacaoId);
+    const idsDeExecucoesDoTenant = new Set(
+      (await deps.repo.listarRuns(usuario.organizacaoId)).map((run) => run.id)
+    );
     return json(200, {
       iniciados: ciclo.iniciados,
       recuperados: ciclo.recuperados,
       expirados: ciclo.expirados,
       aguardandoBackoff: ciclo.aguardandoBackoff,
       mensagens: ciclo.mensagens,
-      leasesAtivos: deps.leases.ativos().map((l) => l.runId),
+      leasesAtivos: deps.leases.ativos()
+        .filter((lease) => idsDeExecucoesDoTenant.has(lease.runId))
+        .map((lease) => lease.runId),
     });
   }
   if (metodo === "POST" && path === "/execucoes/processar-simples") {
     exigirPermissao(usuario, "missao:executar", usuario.organizacaoId);
-    return json(200, await processarFila(ctx));
+    return json(200, await processarFila(ctx, usuario.organizacaoId));
   }
   if (metodo === "POST" && path === "/execucoes/concluir") {
     const obj = req.body as Record<string, unknown>;
