@@ -20,7 +20,7 @@ export function Integrations() {
   const total = state.integracoes.length;
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--integracoes space-y-5">
       <div className="glass flex items-start gap-3 border-amber-400/30 bg-amber-400/[0.06] p-4">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-200" />
         <div>

@@ -148,7 +148,7 @@ export function Kanban() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--kanban space-y-5">
       <div className="glass flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />

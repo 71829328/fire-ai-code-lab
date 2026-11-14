@@ -94,7 +94,7 @@ export function DataBackup() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--dados space-y-5">
       {/* Persistência atual + issues de carga */}
       <section className="glass p-5">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-100">

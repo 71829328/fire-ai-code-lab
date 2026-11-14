@@ -18,10 +18,14 @@ import {
 } from "../store/selectors";
 import { StatCard } from "../components/ui/StatCard";
 import { BarChart, DonutChart, ProgressBar } from "../components/charts/Charts";
-import { OrigemBadge, ProjectStatusBadge } from "../components/ui/badges";
+import {
+  MissionStatusBadge,
+  OrigemBadge,
+  PriorityBadge,
+  ProjectStatusBadge,
+} from "../components/ui/badges";
 import type { ActivityType } from "../types";
 
-// Mapa de ícones cobrindo todos os ActivityType do domínio v2.
 const activityIcon: Record<ActivityType, typeof ActivityIcon> = {
   agente: Bot,
   projeto: FolderKanban,
@@ -51,134 +55,123 @@ export function Dashboard() {
   const semConexaoReal = stats.agentesConectados === 0 && stats.integracoesAtivas === 0;
 
   return (
-    <div className="space-y-6">
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 stagger">
-        <StatCard
-          label="Agentes"
-          value={stats.totalAgentes}
-          hint={`${stats.agentesConectados} conectados · ${stats.agentesCadastrados} cadastrados`}
-          icon={Bot}
-          accent="fire"
-        />
-        <StatCard
-          label="Missões"
-          value={stats.totalMissoes}
-          hint={`${stats.missoesAguardandoAprovacao} aguardando aprovação`}
-          icon={Target}
-          accent="cyan"
-        />
-        <StatCard
-          label="Tarefas"
-          value={stats.totalTarefas}
-          hint={`${stats.tarefasConcluidas} concluídas (${concluidasRatio}%)`}
-          icon={ListChecks}
-          accent="violet"
-        />
-        <StatCard
-          label="Execuções locais"
-          value={stats.execucoesLocais}
-          hint="Demonstração no navegador"
-          icon={Cpu}
-          accent="emerald"
-        />
+    <div className="fire-page fire-page--dashboard space-y-6">
+      <section className="fire-dashboard-metrics grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 stagger" aria-label="Resumo operacional">
+        <StatCard label="Agentes" value={stats.totalAgentes} hint={`${stats.agentesConectados} conectados · ${stats.agentesCadastrados} cadastrados`} icon={Bot} accent="fire" />
+        <StatCard label="Missões" value={stats.totalMissoes} hint={`${stats.missoesAguardandoAprovacao} aguardando aprovação`} icon={Target} accent="cyan" />
+        <StatCard label="Tarefas" value={stats.totalTarefas} hint={`${stats.tarefasConcluidas} concluídas · ${concluidasRatio}%`} icon={ListChecks} accent="violet" />
+        <StatCard label="Execuções locais" value={stats.execucoesLocais} hint="Atividade registrada neste navegador" icon={Cpu} accent="emerald" />
       </section>
+
+      {semConexaoReal && (
+        <aside className="fire-operational-alert" role="status">
+          <span className="fire-status-dot" aria-hidden />
+          <p><strong>Sem conexões reais ativas.</strong> Os dados abaixo refletem registros locais e demonstrativos.</p>
+          <span className="fire-alert-count">{stats.integracoesAtivas}/{stats.integracoesTotal} integrações ativas</span>
+        </aside>
+      )}
 
       <div className="fire-command-grid">
         <FireCore />
-        <section className="glass fire-roster p-5"><h2 className="mb-4 text-sm font-semibold text-slate-100">Agentes do ambiente local</h2><ul className="space-y-2">{state.agentes.slice(0,6).map(a => <li key={a.id} className="fire-roster-item"><Bot className="h-5 w-5 shrink-0 text-cyan-300" /><div className="min-w-0 flex-1"><span className="block truncate text-sm text-slate-100">{a.nome}</span><span className="text-xs text-slate-400">{a.origem === "demonstrativo" ? "Demonstração" : "Cadastro local"}</span></div></li>)}</ul>{state.agentes.length===0 && <p className="text-sm text-slate-400">Nenhum agente cadastrado.</p>}<p className="mt-4 text-xs text-slate-400">Cadastro local não comprova conexão externa.</p></section>
+        <section className="fire-roster" aria-labelledby="fire-roster-title">
+          <div className="fire-section-heading">
+            <div>
+              <p className="fire-kicker">EQUIPE REGISTRADA</p>
+              <h2 id="fire-roster-title">Agentes</h2>
+            </div>
+            <span className="fire-section-count">{state.agentes.length.toString().padStart(2, "0")}</span>
+          </div>
+          <ul className="fire-roster-list">
+            {state.agentes.slice(0, 6).map((agent) => (
+              <li key={agent.id} className="fire-roster-item">
+                <Bot className="h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate text-sm text-slate-100">{agent.nome}</span>
+                  <span className="text-xs text-slate-400">{agent.origem === "demonstrativo" ? "Demonstração" : "Cadastro local"}</span>
+                </div>
+                <span className={agent.conexao === "verificado" ? "fire-connection-dot is-connected" : "fire-connection-dot"} title={agent.conexao === "verificado" ? "Conexão verificada" : "Sem conexão verificada"} />
+              </li>
+            ))}
+          </ul>
+          {state.agentes.length === 0 && <p className="fire-empty-inline">Nenhum agente cadastrado.</p>}
+          <p className="fire-roster-footnote">Cadastro local não comprova conexão externa.</p>
+        </section>
       </div>
-      <section className="glass-soft flex flex-wrap items-center gap-x-6 gap-y-2 p-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-          Indicadores operacionais
-        </h2>
-        <span className="chip border-white/10 bg-white/5 text-slate-200">
-          {stats.agentesConectados} agentes conectados
-        </span>
-        <span className="chip border-white/10 bg-white/5 text-slate-200">
-          {stats.integracoesAtivas}/{stats.integracoesTotal} integrações ativas
-        </span>
-        {semConexaoReal && (
-          <p className="text-xs text-amber-200">
-            Nenhuma conexão real ativa: todos os dados são demonstrativos e nenhuma integração
-            externa está habilitada.
-          </p>
+
+      <section className="fire-mission-pulse" aria-labelledby="fire-mission-pulse-title">
+        <div className="fire-section-heading">
+          <div>
+            <p className="fire-kicker">ACOMPANHAMENTO</p>
+            <h2 id="fire-mission-pulse-title">Missões recentes</h2>
+          </div>
+          <span className="fire-section-count">{state.missoes.length.toString().padStart(2, "0")}</span>
+        </div>
+        {state.missoes.length ? (
+          <ul className="fire-mission-list">
+            {state.missoes.slice(0, 4).map((mission) => (
+              <li key={mission.id} className="fire-mission-row">
+                <span className="fire-mission-code">{mission.codigo}</span>
+                <span className="fire-mission-title">{mission.titulo}</span>
+                <PriorityBadge prioridade={mission.prioridade} />
+                <MissionStatusBadge status={mission.status} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="fire-empty-inline">Nenhuma missão registrada.</p>
         )}
       </section>
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">Missões por status</h2>
+      <section className="fire-dashboard-analytics" aria-label="Indicadores e distribuição">
+        <article className="fire-dashboard-panel">
+          <div className="fire-section-heading"><div><p className="fire-kicker">DISTRIBUIÇÃO</p><h2>Missões por status</h2></div></div>
           <DonutChart data={missionDistribution(state)} />
-        </div>
-
-        <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">Tarefas por status</h2>
+        </article>
+        <article className="fire-dashboard-panel">
+          <div className="fire-section-heading"><div><p className="fire-kicker">DISTRIBUIÇÃO</p><h2>Tarefas por status</h2></div></div>
           <DonutChart data={statusDistribution(state)} />
-        </div>
-
-        <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">Carga por agente</h2>
-          {cargaPorAgente.length > 0 ? (
-            <BarChart data={cargaPorAgente} />
-          ) : (
-            <p className="text-sm text-slate-400">Nenhuma tarefa atribuída ainda.</p>
-          )}
-        </div>
+        </article>
+        <article className="fire-dashboard-panel fire-dashboard-panel--workload">
+          <div className="fire-section-heading"><div><p className="fire-kicker">CAPACIDADE</p><h2>Carga por agente</h2></div></div>
+          {cargaPorAgente.length ? <BarChart data={cargaPorAgente} /> : <p className="fire-empty-inline">Nenhuma tarefa atribuída ainda.</p>}
+        </article>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">Progresso dos projetos</h2>
-          <ul className="space-y-4">
-            {state.projetos.slice(0, 5).map((projeto) => (
-              <li key={projeto.id} className="space-y-2">
+      <section className="fire-dashboard-bottom">
+        <article className="fire-dashboard-panel">
+          <div className="fire-section-heading"><div><p className="fire-kicker">PORTFÓLIO</p><h2>Progresso dos projetos</h2></div></div>
+          <ul className="fire-project-list">
+            {state.projetos.slice(0, 5).map((project) => (
+              <li key={project.id} className="fire-project-row">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-slate-200">{projeto.nome}</span>
-                  <span className="text-xs font-semibold text-slate-300">
-                    {projeto.progresso}%
-                  </span>
+                  <span className="text-sm font-medium text-slate-200">{project.nome}</span>
+                  <span className="text-xs tabular-nums text-slate-300">{project.progresso}%</span>
                 </div>
-                <ProgressBar value={projeto.progresso} />
-                <div className="flex flex-wrap items-center gap-2">
-                  <ProjectStatusBadge status={projeto.status} />
-                  <OrigemBadge origem={projeto.origem} />
-                </div>
+                <ProgressBar value={project.progresso} />
+                <div className="flex flex-wrap items-center gap-2"><ProjectStatusBadge status={project.status} /><OrigemBadge origem={project.origem} /></div>
               </li>
             ))}
-            {state.projetos.length === 0 && (
-              <li className="text-sm text-slate-400">Nenhum projeto cadastrado.</li>
-            )}
+            {!state.projetos.length && <li className="fire-empty-inline">Nenhum projeto cadastrado.</li>}
           </ul>
-        </div>
-
-        <div className="glass p-5">
-          <h2 className="mb-4 text-sm font-semibold text-slate-100">Atividades recentes</h2>
-          <ul className="space-y-3">
-            {state.atividades.slice(0, 6).map((atividade) => {
-              const Icon = activityIcon[atividade.tipo];
+        </article>
+        <article className="fire-dashboard-panel">
+          <div className="fire-section-heading"><div><p className="fire-kicker">TRILHA OPERACIONAL</p><h2>Atividade recente</h2></div></div>
+          <ul className="fire-activity-list">
+            {state.atividades.slice(0, 6).map((activity) => {
+              const Icon = activityIcon[activity.tipo];
               return (
-                <li key={atividade.id} className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300">
-                    <Icon className="h-4 w-4" />
-                  </div>
+                <li key={activity.id} className="fire-activity-row">
+                  <span className="fire-activity-icon"><Icon className="h-4 w-4" aria-hidden /></span>
                   <div className="min-w-0">
-                    <p className="text-sm text-slate-200">
-                      <span className="text-slate-400">{atividade.acao} </span>
-                      <span className="font-medium">{atividade.alvo}</span>
-                    </p>
-                    <p className="truncate text-xs text-slate-500">
-                      {dateFormatter.format(new Date(atividade.timestamp))}
-                      {atividade.detalhe ? ` · ${atividade.detalhe}` : ""}
-                    </p>
+                    <p className="text-sm text-slate-200"><span className="text-slate-400">{activity.acao} </span><span className="font-medium">{activity.alvo}</span></p>
+                    <p className="text-xs text-slate-500">{dateFormatter.format(new Date(activity.timestamp))}{activity.detalhe ? ` · ${activity.detalhe}` : ""}</p>
                   </div>
                 </li>
               );
             })}
-            {state.atividades.length === 0 && (
-              <li className="text-sm text-slate-400">Sem atividades registradas.</li>
-            )}
+            {!state.atividades.length && <li className="fire-empty-inline">Sem atividades registradas.</li>}
           </ul>
-        </div>
+        </article>
       </section>
     </div>
   );

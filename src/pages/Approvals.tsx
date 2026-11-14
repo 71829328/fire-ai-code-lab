@@ -124,7 +124,7 @@ function EvidenciaForm({
   };
 
   return (
-    <div className="glass-soft space-y-3 p-3">
+    <div className="fire-page fire-page--aprovacoes glass-soft space-y-3 p-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className="label" htmlFor={`ev-tipo-${missaoId}`}>
@@ -225,7 +225,7 @@ export function Approvals() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--aprovacoes space-y-5">
       <div className="glass flex flex-wrap items-center justify-between gap-2 p-4">
         <p className="text-sm text-slate-300">
           <span className="font-semibold text-slate-100">{pendentes.length}</span> missão(ões)

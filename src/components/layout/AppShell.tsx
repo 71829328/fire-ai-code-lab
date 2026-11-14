@@ -143,7 +143,7 @@ export function AppShell({ page, onNavigate, title, subtitle, children }: AppShe
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="fire-header sticky top-0 z-20 border-b border-white/10 bg-night-950/70 backdrop-blur-xl">
-          <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6">
+          <div className="flex items-center gap-3 px-4 py-2.5 sm:px-6">
             <button
               type="button"
               className="btn-ghost !px-2.5 !py-2 lg:hidden"
@@ -178,7 +178,7 @@ export function AppShell({ page, onNavigate, title, subtitle, children }: AppShe
               </span>
             </div>
 
-            <DemoBadge compact />
+            <DemoBadge />
             <button
               type="button"
               className="btn-ghost hidden !px-3 sm:inline-flex"
@@ -199,9 +199,7 @@ export function AppShell({ page, onNavigate, title, subtitle, children }: AppShe
         </main>
 
         <footer className="border-t border-white/10 px-4 py-4 text-xs text-slate-500 sm:px-6">
-          FIRE Agent Command Center · central operacional demonstrativa. Registros marcados como
-          “Demonstração” são dados de exemplo — nenhum agente está conectado a serviços reais e
-          nenhuma integração externa está ativa.
+          FIRE Agent Command Center · registros locais não comprovam uma conexão externa.
         </footer>
       </div>
 
@@ -269,7 +267,7 @@ function Sidebar({
         </button>
       </div>
 
-      <nav className="flex-1 space-y-4 px-3 py-2">
+      <nav className="flex-1 space-y-3 px-2.5 py-1.5">
         {NAV_GROUPS.map((grupo) => (
           <div key={grupo.titulo} className="space-y-1">
             {!collapsed && (
@@ -289,7 +287,7 @@ function Sidebar({
                   title={collapsed ? item.label : undefined}
                   aria-current={active ? "page" : undefined}
                   className={[
-                    "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    "group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200",
                     active
                       ? "fire-nav-active border border-fire/40 bg-fire/10 text-fire-soft shadow-glow"
                       : "border border-transparent text-slate-300 hover:border-white/10 hover:bg-white/5 hover:text-slate-100",
@@ -313,16 +311,6 @@ function Sidebar({
           </div>
         ))}
       </nav>
-
-      {!collapsed && (
-        <div className="glass-soft m-3 p-3 text-[11px] leading-relaxed text-slate-400">
-          <p className="font-semibold text-amber-200">Dados demonstrativos</p>
-          <p className="mt-1">
-            Os agentes listados são exemplos locais. Nenhuma API paga, credencial externa ou
-            serviço comercial é utilizado.
-          </p>
-        </div>
-      )}
 
       <button
         type="button"

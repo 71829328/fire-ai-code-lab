@@ -130,7 +130,7 @@ export function EvidenceCenter() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--evidencias space-y-5">
       <div className="glass flex items-start gap-3 border-emerald-400/30 bg-emerald-400/[0.06] p-4">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-200" />
         <div>

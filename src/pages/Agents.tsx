@@ -128,7 +128,7 @@ export function Agents() {
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--agentes space-y-5">
       <section
         className="fire-metrics grid grid-cols-2 sm:grid-cols-4"
         aria-label="Indicadores de agentes"

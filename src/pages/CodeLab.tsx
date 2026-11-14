@@ -40,7 +40,7 @@ export function CodeLab() {
         : "bg-rose-400";
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--codelab space-y-5">
       <div className="glass flex flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-100">

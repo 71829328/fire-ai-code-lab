@@ -89,7 +89,7 @@ export function Governance() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="fire-page fire-page--governanca space-y-5">
       <div className="glass flex items-start gap-3 border-cyan-400/30 bg-cyan-400/[0.06] p-4">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
         <div>
